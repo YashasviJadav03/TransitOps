@@ -7,13 +7,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuth();
 
   const links = [
-    { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { to: '/vehicles', label: 'Fleet Registry', icon: <Truck className="w-5 h-5" /> },
-    { to: '/drivers', label: 'Drivers', icon: <Users className="w-5 h-5" /> },
-    { to: '/trips', label: 'Trips', icon: <MapPin className="w-5 h-5" /> },
-    { to: '/finances', label: 'Finances', icon: <DollarSign className="w-5 h-5" /> },
-    { to: '/maintenance', label: 'Maintenance', icon: <Wrench className="w-5 h-5" /> },
+    { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['Fleet Manager', 'Financial Analyst'] },
+    { to: '/vehicles', label: 'Fleet Registry', icon: <Truck className="w-5 h-5" />, roles: ['Fleet Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst'] },
+    { to: '/drivers', label: 'Drivers', icon: <Users className="w-5 h-5" />, roles: ['Fleet Manager', 'Dispatcher', 'Safety Officer'] },
+    { to: '/trips', label: 'Trips', icon: <MapPin className="w-5 h-5" />, roles: ['Fleet Manager', 'Dispatcher'] },
+    { to: '/finances', label: 'Finances', icon: <DollarSign className="w-5 h-5" />, roles: ['Fleet Manager', 'Financial Analyst'] },
+    { to: '/maintenance', label: 'Maintenance', icon: <Wrench className="w-5 h-5" />, roles: ['Fleet Manager'] },
   ];
+
+  const visibleLinks = links.filter(link => link.roles.includes(user?.role_name));
 
   return (
     <>
@@ -44,7 +46,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         </div>
 
       <nav className="flex-1 px-4 space-y-2 mt-4">
-        {links.map((link) => (
+        {visibleLinks.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}

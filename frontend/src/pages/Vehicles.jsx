@@ -6,8 +6,10 @@ import { Plus, Edit2, Loader2 } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { useAuth } from '../context/AuthContext';
 
 const Vehicles = () => {
+  const { user } = useAuth();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -111,9 +113,11 @@ const Vehicles = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Fleet Registry</h1>
           <p className="text-slate-500 mt-1">Manage and track all company vehicles</p>
         </div>
-        <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Add Vehicle
-        </Button>
+        {user?.role_name === 'Fleet Manager' && (
+          <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> Add Vehicle
+          </Button>
+        )}
       </div>
 
       <Card className="bg-white border-slate-200 shadow-sm">
@@ -150,9 +154,11 @@ const Vehicles = () => {
                       <td className="p-4 text-slate-500">{v.odometer.toLocaleString()} km</td>
                       <td className="p-4">{getStatusBadge(v.status)}</td>
                       <td className="p-4 text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(v)} className="text-slate-500 hover:text-blue-600">
-                          <Edit2 className="w-4 h-4 mr-1" /> Edit
-                        </Button>
+                        {user?.role_name === 'Fleet Manager' && (
+                          <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(v)} className="text-slate-500 hover:text-blue-600">
+                            <Edit2 className="w-4 h-4 mr-1" /> Edit
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))

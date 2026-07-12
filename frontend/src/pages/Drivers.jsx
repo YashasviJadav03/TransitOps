@@ -6,8 +6,10 @@ import { Plus, Edit2, AlertTriangle, Loader2 } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { useAuth } from '../context/AuthContext';
 
 const Drivers = () => {
+  const { user } = useAuth();
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -118,9 +120,11 @@ const Drivers = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Driver Profiles</h1>
           <p className="text-slate-500 mt-1">Manage personnel and monitor license validity</p>
         </div>
-        <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Add Driver
-        </Button>
+        {(user?.role_name === 'Fleet Manager' || user?.role_name === 'Safety Officer') && (
+          <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> Add Driver
+          </Button>
+        )}
       </div>
 
       <Card className="bg-white border-slate-200 shadow-sm">
@@ -176,9 +180,11 @@ const Drivers = () => {
                         </td>
                         <td className="p-4">{getStatusBadge(d.status)}</td>
                         <td className="p-4 text-right">
-                          <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(d)} className="text-slate-500 hover:text-blue-600">
-                            <Edit2 className="w-4 h-4 mr-1" /> Edit
-                          </Button>
+                          {(user?.role_name === 'Fleet Manager' || user?.role_name === 'Safety Officer') && (
+                            <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(d)} className="text-slate-500 hover:text-blue-600">
+                              <Edit2 className="w-4 h-4 mr-1" /> Edit
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     );

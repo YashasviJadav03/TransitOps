@@ -1,11 +1,11 @@
 const express = require('express');
 const { addFuelLog, addExpense, getVehicleCosts } = require('../controllers/financeController');
 const authMiddleware = require('../middleware/authMiddleware');
-
+const authorizeRoles = require('../middleware/rbacMiddleware');
 const router = express.Router();
 
 router.use(authMiddleware);
-
+router.use(authorizeRoles('Fleet Manager', 'Financial Analyst'));
 router.post('/fuel', addFuelLog);
 router.post('/expense', addExpense);
 router.get('/costs', getVehicleCosts);

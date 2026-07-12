@@ -1,57 +1,107 @@
 # TransitOps
-A centralized transport operations platform for managing vehicles, drivers, trips, maintenance, and fuel expenses with real-time tracking, role-based access control, and automated business workflows.
 
-## Hackathon Sprint Plan
+**Smart Transport Operations Platform**
 
-The project development was structured into the following targeted sprints:
+TransitOps is a full-stack web application that brings transport operations under a single, centralized platform. It replaces fragmented spreadsheets and manual logbooks with a structured system for managing vehicles, drivers, trips, maintenance, and expenses — all governed by automated business rules and role-based access.
 
-### Sprint 0: Setup
-- Initialize the repository and establish a branching strategy.
-- Scaffold the technical stack for both frontend and backend architectures.
-- Define a shared database schema and entity relationship model covering Users, Vehicles, Drivers, Trips, Maintenance, and Fuel/Expenses.
-- Deploy a skeletal application locally to verify development environments.
+The platform addresses common pain points in logistics: scheduling conflicts caused by double-booked drivers, vehicles sent on trips while still in the shop, expired licenses going unnoticed, and operational costs scattered across disconnected records. TransitOps eliminates these by enforcing constraints at the application level and providing a real-time dashboard for operational visibility.
 
-### Sprint 1: Authentication and Core Data Models
-- Implement the User model, including required role fields (Fleet Manager, Driver).
-- Develop secure sign-up and login workflows utilizing email, password, and session handling.
-- Configure protected routes to restrict application access to authenticated users only.
-- Define initial models for Vehicles and Drivers, encompassing all mandatory fields.
+---
 
-### Sprint 2: Resource Management
-- Develop the Vehicle Registry module, enabling list creation and editing while enforcing unique registration numbers.
-- Create the Driver Management module, incorporating list creation, editing, license expiry tracking, and status assignment.
-- Build initial user interfaces for data tables, including status indicators.
+## Tech Stack
 
-### Sprint 3: Trip Management and Validations
-- Construct the trip creation interface requiring source, destination, selected vehicle, selected driver, cargo weight, and planned distance.
-- Implement strict validation to exclude vehicles designated as "Retired" or "In Shop" from dispatch selection.
-- Implement validation to exclude drivers with expired licenses or a "Suspended" status.
-- Block the selection of vehicles or drivers currently engaged in an active trip.
-- Ensure cargo weight limits do not exceed the designated vehicle's maximum load capacity.
-- Manage the trip lifecycle states (Draft, Dispatched, Completed, Cancelled) with automated status transitions for resources upon dispatch, completion, or cancellation.
+| Layer            | Technology                    |
+|------------------|-------------------------------|
+| Frontend         | React                         |
+| Backend          | Node.js with Express          |
+| Database         | PostgreSQL (via Docker)       |
+| Auth             | JWT-based session management  |
+| Containerization | Docker, Docker Compose        |
+| Styling          | CSS (responsive, mobile-first)|
 
-### Sprint 4: Maintenance Workflow
-- Establish a maintenance record creation system capturing the vehicle, identified issue, and date.
-- Automate the transition of a vehicle's status to "In Shop" when an active maintenance record is generated, removing it from the dispatch pool.
-- Ensure vehicle status reverts to "Available" upon the closure of a maintenance record (unless marked as "Retired").
+---
 
-### Sprint 5: Fuel and Expense Tracking
-- Create logging interfaces for fuel consumption (liters, cost, date) associated with specific vehicles.
-- Implement expense entry forms for secondary costs such as tolls.
-- Automate the computation of total operational costs per vehicle, aggregating fuel and maintenance expenses.
+## Features
 
-### Sprint 6: Dashboard and KPIs
-- Develop key performance indicator modules for Active Vehicles, Available Vehicles, Vehicles in Maintenance, Active Trips, Pending Trips, Drivers On Duty, and overall Fleet Utilization percentage.
-- Implement basic filtering options by vehicle type, status, and region.
-- Calculate and display simple analytics including Fuel Efficiency, Fleet Utilization, and Operational Cost.
+### Authentication and Access Control
+Secure email and password login with JWT-based sessions. The platform implements Role-Based Access Control (RBAC) to restrict functionality based on user roles. All application routes are protected and accessible only to authenticated users.
 
-### Sprint 7: Polish and Bugfix
-- Conduct end-to-end testing and resolve identified workflow issues.
-- Perform a responsive layout review to ensure functionality across mobile and tablet devices.
-- Implement comprehensive loading and error states throughout the application.
+**Supported Roles:**
+- Fleet Manager — full access to fleet assets, maintenance, and operational data.
+- Driver — trip creation, vehicle/driver assignment, and delivery monitoring.
+- Safety Officer — driver compliance monitoring, license tracking, and safety scoring.
+- Financial Analyst — expense review, fuel cost analysis, and profitability reporting.
 
-### Sprint 8: Demo Preparation and Submission
-- Provide required repository access to evaluators.
-- Seed the application database with sample vehicles, drivers, and trips for a seamless demonstration.
-- Record an end-to-end walkthrough video demonstrating registration, trip creation, validation blocking, and the main dashboard.
-- Finalize the repository and submit the solution package.
+### Vehicle Registry
+A centralized register of all fleet vehicles. Each record captures the Registration Number (enforced as unique), Vehicle Name/Model, Type (e.g., Truck, Van, Sedan), Maximum Load Capacity, current Odometer reading, Acquisition Cost, and operational Status.
+
+**Vehicle Statuses:** `Available` | `On Trip` | `In Shop` | `Retired`
+
+### Driver Management
+Maintains detailed driver profiles including Name, License Number, License Category, License Expiry Date, Contact Number, Safety Score, and current Status. The system actively checks license validity and prevents non-compliant drivers from being dispatched.
+
+**Driver Statuses:** `Available` | `On Trip` | `Off Duty` | `Suspended`
+
+### Trip Dispatch and Lifecycle
+Trips are created by specifying a source, destination, vehicle, driver, cargo weight, and planned distance. The system validates every assignment against capacity limits, vehicle availability, and driver eligibility before allowing dispatch.
+
+**Trip Lifecycle:** `Draft` → `Dispatched` → `Completed` | `Cancelled`
+
+All status transitions are automated. Dispatching a trip marks both the vehicle and driver as "On Trip". Completing or cancelling the trip restores them to "Available".
+
+### Maintenance Workflow
+When a maintenance record is created for a vehicle, the system automatically sets that vehicle's status to "In Shop", removing it from the dispatch pool entirely. Closing the maintenance record restores the vehicle to "Available" (unless it has been retired). This prevents any possibility of dispatching a vehicle that is undergoing service.
+
+### Fuel and Expense Tracking
+Fuel logs capture liters consumed, cost, and date per vehicle. Additional operational expenses such as tolls and ad-hoc costs are recorded separately. The system automatically computes total operational cost (Fuel + Maintenance) per vehicle for financial reporting.
+
+### Dashboard and Analytics
+A real-time dashboard surfaces key performance indicators at a glance:
+- Active Vehicles, Available Vehicles, Vehicles in Maintenance
+- Active Trips, Pending Trips
+- Drivers On Duty
+- Fleet Utilization (%)
+
+Analytical metrics include Fuel Efficiency (distance per liter), total Operational Cost per vehicle, and Vehicle ROI calculated as `(Revenue - Maintenance - Fuel) / Acquisition Cost`. The dashboard supports filtering by vehicle type, status, and region. CSV export is available for reporting.
+
+---
+
+## Business Rules
+
+These rules are enforced programmatically to maintain data integrity and operational safety:
+
+| Rule | Description |
+|------|-------------|
+| Unique Registration | No two vehicles can share the same registration number. |
+| Dispatch Eligibility | Only vehicles with "Available" status appear in the dispatch pool. "Retired" and "In Shop" vehicles are excluded. |
+| Driver Compliance | Drivers with expired licenses or "Suspended" status cannot be assigned to any trip. |
+| No Double Booking | A vehicle or driver already marked "On Trip" cannot be assigned to another trip simultaneously. |
+| Capacity Check | Cargo weight must not exceed the selected vehicle's maximum load capacity. |
+| Auto Dispatch Status | Dispatching a trip automatically transitions both the vehicle and driver to "On Trip". |
+| Auto Completion Status | Completing a trip automatically restores both the vehicle and driver to "Available". |
+| Auto Cancellation Status | Cancelling a dispatched trip restores both the vehicle and driver to "Available". |
+| Maintenance Lock | Creating an active maintenance record automatically sets the vehicle to "In Shop". |
+| Maintenance Release | Closing a maintenance record restores the vehicle to "Available", unless the vehicle is retired. |
+
+---
+
+## Database Schema
+
+The application is built around the following core entities:
+
+| Entity            | Purpose                                                  |
+|-------------------|----------------------------------------------------------|
+| Users             | Authentication credentials and role assignments          |
+| Roles             | Access control definitions (Fleet Manager, Driver, etc.) |
+| Vehicles          | Fleet asset registry with status and capacity tracking   |
+| Drivers           | Driver profiles with license and compliance data         |
+| Trips             | Dispatch records with lifecycle state management         |
+| Maintenance Logs  | Service history tied to vehicles with status automation  |
+| Fuel Logs         | Per-vehicle fuel consumption records                     |
+| Expenses          | Supplementary operational cost entries                   |
+
+---
+
+## Project Documentation
+
+Detailed sprint-level documentation is available in the [`docs/`](docs/) directory, covering the development approach from initial setup through final delivery.

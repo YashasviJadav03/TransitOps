@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Truck, Users, MapPin, Wrench, LogOut, DollarSign, X } from 'lucide-react';
+import { LayoutDashboard, Truck, Users, MapPin, Wrench, LogOut, DollarSign, X, FileBarChart } from 'lucide-react';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuth();
@@ -13,6 +13,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { to: '/trips', label: 'Trips', icon: <MapPin className="w-5 h-5" />, roles: ['Fleet Manager', 'Dispatcher'] },
     { to: '/finances', label: 'Finances', icon: <DollarSign className="w-5 h-5" />, roles: ['Fleet Manager', 'Financial Analyst'] },
     { to: '/maintenance', label: 'Maintenance', icon: <Wrench className="w-5 h-5" />, roles: ['Fleet Manager'] },
+    { to: '/reports', label: 'Reports', icon: <FileBarChart className="w-5 h-5" />, roles: ['Fleet Manager', 'Financial Analyst'] },
   ];
 
   const visibleLinks = links.filter(link => link.roles.includes(user?.role_name));

@@ -118,7 +118,53 @@ const getChartData = async (req, res) => {
   }
 };
 
+const getFleetReports = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+          v.id,
+          v.registration_number,
+          v.name_model,
+          v.type,
+          v.acquisition_cost,
+          COALESCE(SUM(t.planned_distance_km), 0) AS total_distance,
+          COUNT(t.id) AS total_trips,
+          COALESCE((SELECT SUM(liters) FROM fuel_logs WHERE vehicle_id = v.id), 0) AS total_fuel,
+          COALESCE((SELECT SUM(cost) FROM fuel_logs WHERE vehicle_id = v.id), 0) +
+          COALESCE((SELECT SUM(cost) FROM maintenance_logs WHERE vehicle_id = v.id), 0) +
+          COALESCE((SELECT SUM(toll_amount + other_amount) FROM expenses WHERE vehicle_id = v.id), 0) AS total_operational_cost
+      FROM vehicles v
+      LEFT JOIN trips t ON v.id = t.vehicle_id AND t.status = 'Completed'
+      GROUP BY v.id
+      ORDER BY v.name_model ASC
+    `;
+    const result = await pool.query(query);
+    
+    // Compute derived metrics
+    const reports = result.rows.map(row => {
+      const distance = parseFloat(row.total_distance) || 0;
+      const fuel = parseFloat(row.total_fuel) || 0;
+      const opsCost = parseFloat(row.total_operational_cost) || 0;
+
+      const fuel_efficiency = fuel > 0 ? (distance / fuel).toFixed(2) : 0;
+      const cost_per_km = distance > 0 ? (opsCost / distance).toFixed(2) : 0;
+      
+      return {
+        ...row,
+        fuel_efficiency: parseFloat(fuel_efficiency),
+        cost_per_km: parseFloat(cost_per_km)
+      };
+    });
+
+    res.json({ status: 'success', data: reports });
+  } catch (error) {
+    console.error('Error fetching fleet reports:', error);
+    res.status(500).json({ status: 'error', message: 'Server error fetching fleet reports' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
-  getChartData
+  getChartData,
+  getFleetReports
 };

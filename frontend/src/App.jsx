@@ -9,6 +9,7 @@ import Drivers from './pages/Drivers';
 import Trips from './pages/Trips';
 import Finances from './pages/Finances';
 import Maintenance from './pages/Maintenance';
+import Reports from './pages/Reports';
 import Sidebar from './components/Sidebar';
 import { Menu } from 'lucide-react';
 import './index.css';
@@ -140,6 +141,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <DashboardLayout>
               <Finances />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/reports" 
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Reports />
             </DashboardLayout>
           </ProtectedRoute>
         } 

@@ -2,11 +2,32 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Edit2, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Modal } from '../components/ui/modal';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 
 const Drivers = () => {
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDriver, setEditingDriver] = useState(null);
+  const [formError, setFormError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Form State
+  const initialFormState = {
+    name: '',
+    license_no: '',
+    license_category: 'LMV',
+    license_expiry: '',
+    contact_number: '',
+    status: 'Available',
+    safety_score: '100.00'
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   useEffect(() => {
     fetchDrivers();
@@ -20,6 +41,52 @@ const Drivers = () => {
       console.error('Failed to fetch drivers:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenAdd = () => {
+    setEditingDriver(null);
+    setFormData(initialFormState);
+    setFormError('');
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (driver) => {
+    setEditingDriver(driver);
+    setFormData({
+      name: driver.name,
+      license_no: driver.license_no, // usually immutable but kept for form consistency
+      license_category: driver.license_category,
+      license_expiry: driver.license_expiry.split('T')[0], // format date for input type="date"
+      contact_number: driver.contact_number,
+      status: driver.status,
+      safety_score: driver.safety_score
+    });
+    setFormError('');
+    setIsModalOpen(true);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError('');
+    setIsSaving(true);
+
+    try {
+      if (editingDriver) {
+        await axios.put(`/drivers/${editingDriver.id}`, formData);
+      } else {
+        await axios.post('/drivers', formData);
+      }
+      setIsModalOpen(false);
+      fetchDrivers(); // Refresh data
+    } catch (error) {
+      setFormError(error.response?.data?.message || 'Failed to save driver');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -51,7 +118,7 @@ const Drivers = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Driver Profiles</h1>
           <p className="text-slate-500 mt-1">Manage personnel and monitor license validity</p>
         </div>
-        <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+        <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
           <Plus className="w-4 h-4" /> Add Driver
         </Button>
       </div>
@@ -109,7 +176,7 @@ const Drivers = () => {
                         </td>
                         <td className="p-4">{getStatusBadge(d.status)}</td>
                         <td className="p-4 text-right">
-                          <Button variant="ghost" size="sm" className="text-slate-500 hover:text-blue-600">
+                          <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(d)} className="text-slate-500 hover:text-blue-600">
                             <Edit2 className="w-4 h-4 mr-1" /> Edit
                           </Button>
                         </td>
@@ -122,6 +189,115 @@ const Drivers = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Add / Edit Modal */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        title={editingDriver ? 'Edit Driver' : 'Add New Driver'}
+        description={editingDriver ? 'Update the details for this driver.' : 'Enter the details to register a new driver.'}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {formError && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              {formError}
+            </div>
+          )}
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input 
+                id="name" 
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required 
+                placeholder="e.g. John Doe"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="license_no">License Number</Label>
+              <Input 
+                id="license_no" 
+                name="license_no"
+                value={formData.license_no}
+                onChange={handleChange}
+                disabled={!!editingDriver} 
+                required 
+                placeholder="e.g. DL-123456"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="license_category">License Category</Label>
+              <select 
+                id="license_category"
+                name="license_category"
+                value={formData.license_category}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              >
+                <option value="LMV">LMV (Light Motor Vehicle)</option>
+                <option value="HMV">HMV (Heavy Motor Vehicle)</option>
+                <option value="MCWG">MCWG (Motor Cycle with Gear)</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="license_expiry">License Expiry Date</Label>
+              <Input 
+                id="license_expiry" 
+                name="license_expiry"
+                type="date"
+                value={formData.license_expiry}
+                onChange={handleChange}
+                required 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="contact_number">Contact Number</Label>
+              <Input 
+                id="contact_number" 
+                name="contact_number"
+                type="tel"
+                value={formData.contact_number}
+                onChange={handleChange}
+                required 
+                placeholder="e.g. 9876543210"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <select 
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              >
+                <option value="Available">Available</option>
+                <option value="On Duty">On Duty</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Off Duty">Off Duty</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white min-w-[100px]">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

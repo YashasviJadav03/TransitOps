@@ -4,8 +4,8 @@ const getDashboardStats = async (req, res) => {
   const { vehicleType, vehicleStatus } = req.query; // vehicleType: 'All', 'Truck', 'Van', 'Mini'. vehicleStatus: 'All', 'Available', 'On Trip', 'In Shop', 'Retired'
 
   try {
-    const typeFilter = vehicleType && vehicleType !== 'All' ? `AND type = $1` : '';
-    let statusFilter = vehicleStatus && vehicleStatus !== 'All' ? `AND status = $2` : `AND status != 'Retired'`;
+    const typeFilter = vehicleType && vehicleType !== 'All' ? `AND v.type = $1` : '';
+    let statusFilter = vehicleStatus && vehicleStatus !== 'All' ? `AND v.status = $2` : `AND v.status != 'Retired'`;
     
     // If no typeFilter is present, $1 will be vehicleStatus. Adjust queryParams logic:
     const queryParams = [];
@@ -13,20 +13,20 @@ const getDashboardStats = async (req, res) => {
     
     let statusIndex = typeFilter ? 2 : 1;
     if (vehicleStatus && vehicleStatus !== 'All') {
-      statusFilter = `AND status = $${statusIndex}`;
+      statusFilter = `AND v.status = $${statusIndex}`;
       queryParams.push(vehicleStatus);
     } else {
-      statusFilter = `AND status != 'Retired'`;
+      statusFilter = `AND v.status != 'Retired'`;
     }
 
     // 1. Vehicle Stats
     const vehicleQuery = `
       SELECT 
         COUNT(*) as total_active,
-        COUNT(CASE WHEN status = 'Available' THEN 1 END) as available,
-        COUNT(CASE WHEN status = 'On Trip' THEN 1 END) as on_trip,
-        COUNT(CASE WHEN status = 'In Shop' THEN 1 END) as in_shop
-      FROM vehicles 
+        COUNT(CASE WHEN v.status = 'Available' THEN 1 END) as available,
+        COUNT(CASE WHEN v.status = 'On Trip' THEN 1 END) as on_trip,
+        COUNT(CASE WHEN v.status = 'In Shop' THEN 1 END) as in_shop
+      FROM vehicles v
       WHERE 1=1 ${typeFilter} ${statusFilter}
     `;
     const vehicleResult = await pool.query(vehicleQuery, queryParams);
@@ -49,22 +49,36 @@ const getDashboardStats = async (req, res) => {
     const tripQuery = `
       SELECT 
         COUNT(*) as total_trips,
-        COUNT(CASE WHEN status = 'Draft' THEN 1 END) as pending,
-        COUNT(CASE WHEN status = 'Dispatched' THEN 1 END) as active,
-        COUNT(CASE WHEN status = 'Completed' THEN 1 END) as completed
-      FROM trips
+        COUNT(CASE WHEN t.status = 'Draft' THEN 1 END) as pending,
+        COUNT(CASE WHEN t.status = 'Dispatched' THEN 1 END) as active,
+        COUNT(CASE WHEN t.status = 'Completed' THEN 1 END) as completed
+      FROM trips t
+      JOIN vehicles v ON t.vehicle_id = v.id
+      WHERE 1=1 ${typeFilter} ${statusFilter}
     `;
-    const tripResult = await pool.query(tripQuery);
+    const tripResult = await pool.query(tripQuery, queryParams);
     const tripStats = tripResult.rows[0];
 
     // 4. Financials (Total Operational Cost)
     const financeQuery = `
       SELECT 
-        (SELECT COALESCE(SUM(cost), 0) FROM fuel_logs) +
-        (SELECT COALESCE(SUM(cost), 0) FROM maintenance_logs) +
-        (SELECT COALESCE(SUM(toll_amount + other_amount), 0) FROM expenses) as total_operational_cost
+        (SELECT COALESCE(SUM(cost), 0) FROM fuel_logs f JOIN vehicles v ON f.vehicle_id = v.id WHERE 1=1 ${typeFilter} ${statusFilter}) +
+        (SELECT COALESCE(SUM(cost), 0) FROM maintenance_logs m JOIN vehicles v ON m.vehicle_id = v.id WHERE 1=1 ${typeFilter} ${statusFilter}) +
+        (SELECT COALESCE(SUM(toll_amount + other_amount), 0) FROM expenses e JOIN vehicles v ON e.vehicle_id = v.id WHERE 1=1 ${typeFilter} ${statusFilter}) as total_operational_cost
     `;
-    const financeResult = await pool.query(financeQuery);
+    // We need to pass the parameters 3 times because we have 3 subqueries.
+    const financeParams = [...queryParams, ...queryParams, ...queryParams];
+    
+    // Adjust parameter indices in the subqueries
+    let currentParamIndex = 1;
+    let finalFinanceQuery = `
+      SELECT 
+        (SELECT COALESCE(SUM(cost), 0) FROM fuel_logs f JOIN vehicles v ON f.vehicle_id = v.id WHERE 1=1 ${typeFilter ? `AND v.type = $${currentParamIndex++}` : ''} ${vehicleStatus && vehicleStatus !== 'All' ? `AND v.status = $${currentParamIndex++}` : `AND v.status != 'Retired'`}) +
+        (SELECT COALESCE(SUM(cost), 0) FROM maintenance_logs m JOIN vehicles v ON m.vehicle_id = v.id WHERE 1=1 ${typeFilter ? `AND v.type = $${currentParamIndex++}` : ''} ${vehicleStatus && vehicleStatus !== 'All' ? `AND v.status = $${currentParamIndex++}` : `AND v.status != 'Retired'`}) +
+        (SELECT COALESCE(SUM(toll_amount + other_amount), 0) FROM expenses e JOIN vehicles v ON e.vehicle_id = v.id WHERE 1=1 ${typeFilter ? `AND v.type = $${currentParamIndex++}` : ''} ${vehicleStatus && vehicleStatus !== 'All' ? `AND v.status = $${currentParamIndex++}` : `AND v.status != 'Retired'`}) as total_operational_cost
+    `;
+    
+    const financeResult = await pool.query(finalFinanceQuery, financeParams);
     const totalCost = financeResult.rows[0].total_operational_cost;
 
     // 5. Calculate Utilization
@@ -105,24 +119,44 @@ const getDashboardStats = async (req, res) => {
 };
 
 const getChartData = async (req, res) => {
+  const { vehicleType, vehicleStatus } = req.query;
   try {
+    const typeFilter = vehicleType && vehicleType !== 'All';
+    const statusFilter = vehicleStatus && vehicleStatus !== 'All';
+    
+    const queryParams = [];
+    if (typeFilter) queryParams.push(vehicleType);
+    if (statusFilter) queryParams.push(vehicleStatus);
+
+    const chartParams = [...queryParams, ...queryParams, ...queryParams];
+
+    let currentParamIndex = 1;
+    const typeSql1 = typeFilter ? `AND v.type = $${currentParamIndex++}` : '';
+    const statusSql1 = statusFilter ? `AND v.status = $${currentParamIndex++}` : `AND v.status != 'Retired'`;
+    
+    const typeSql2 = typeFilter ? `AND v.type = $${currentParamIndex++}` : '';
+    const statusSql2 = statusFilter ? `AND v.status = $${currentParamIndex++}` : `AND v.status != 'Retired'`;
+
+    const typeSql3 = typeFilter ? `AND v.type = $${currentParamIndex++}` : '';
+    const statusSql3 = statusFilter ? `AND v.status = $${currentParamIndex++}` : `AND v.status != 'Retired'`;
+
     const query = `
       SELECT 
         to_char(event_date, 'Mon YYYY') as month,
         to_char(event_date, 'YYYY-MM') as sort_key,
         SUM(cost) as total
       FROM (
-        SELECT log_date as event_date, cost FROM fuel_logs
+        SELECT log_date as event_date, cost FROM fuel_logs f JOIN vehicles v ON f.vehicle_id = v.id WHERE 1=1 ${typeSql1} ${statusSql1}
         UNION ALL
-        SELECT service_date as event_date, cost FROM maintenance_logs
+        SELECT service_date as event_date, cost FROM maintenance_logs m JOIN vehicles v ON m.vehicle_id = v.id WHERE 1=1 ${typeSql2} ${statusSql2}
         UNION ALL
-        SELECT expense_date as event_date, (toll_amount + other_amount) as cost FROM expenses
+        SELECT expense_date as event_date, (toll_amount + other_amount) as cost FROM expenses e JOIN vehicles v ON e.vehicle_id = v.id WHERE 1=1 ${typeSql3} ${statusSql3}
       ) combined
       WHERE event_date >= date_trunc('month', CURRENT_DATE - INTERVAL '5 months')
       GROUP BY month, sort_key
       ORDER BY sort_key ASC
     `;
-    const result = await pool.query(query);
+    const result = await pool.query(query, chartParams);
     res.json({ status: 'success', data: result.rows });
   } catch (error) {
     console.error('Error fetching chart data:', error);

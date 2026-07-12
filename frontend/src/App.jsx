@@ -4,6 +4,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Vehicles from './pages/Vehicles';
+import Drivers from './pages/Drivers';
+import Sidebar from './components/Sidebar';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -18,6 +21,17 @@ const ProtectedRoute = ({ children }) => {
   }
 
   return children;
+};
+
+const DashboardLayout = ({ children }) => {
+  return (
+    <div className="flex min-h-screen bg-slate-50 text-slate-900">
+      <Sidebar />
+      <main className="flex-1 ml-64 overflow-y-auto min-h-screen p-8">
+        {children}
+      </main>
+    </div>
+  );
 };
 
 const PublicRoute = ({ children }) => {
@@ -58,7 +72,29 @@ function AppRoutes() {
         path="/dashboard" 
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <DashboardLayout>
+              <Dashboard />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/vehicles" 
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Vehicles />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/drivers" 
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Drivers />
+            </DashboardLayout>
           </ProtectedRoute>
         } 
       />

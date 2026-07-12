@@ -32,14 +32,14 @@ const Login = () => {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-slate-50 px-4">
+    <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-neutral-800/50 px-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col items-center justify-center space-y-2 text-center">
           <div className="rounded-full bg-blue-100 p-3">
             <Truck className="h-6 w-6 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">TransitOps</h1>
-          <p className="text-sm text-slate-500">Welcome back. Please sign in to your account.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">TransitOps</h1>
+          <p className="text-sm text-slate-500 dark:text-neutral-400">Welcome back. Please sign in to your account.</p>
         </div>
         
         <Card>
@@ -81,7 +81,7 @@ const Login = () => {
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-slate-500 dark:text-neutral-400">
               Don't have an account? <Link to="/register" className="text-blue-600 hover:underline">Register</Link>
             </div>
           </CardFooter>

@@ -33,14 +33,14 @@ const Register = () => {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-slate-50 px-4">
+    <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-neutral-800/50 px-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col items-center justify-center space-y-2 text-center">
           <div className="rounded-full bg-blue-100 p-3">
             <Truck className="h-6 w-6 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">TransitOps</h1>
-          <p className="text-sm text-slate-500">Create a new account to manage your fleet.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">TransitOps</h1>
+          <p className="text-sm text-slate-500 dark:text-neutral-400">Create a new account to manage your fleet.</p>
         </div>
         
         <Card>
@@ -82,7 +82,7 @@ const Register = () => {
                   id="role"
                   value={roleName}
                   onChange={(e) => setRoleName(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
+                  className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
                 >
                   <option value="Fleet Manager">Fleet Manager</option>
                   <option value="Dispatcher">Dispatcher</option>
@@ -96,7 +96,7 @@ const Register = () => {
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-slate-500 dark:text-neutral-400">
               Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link>
             </div>
           </CardFooter>

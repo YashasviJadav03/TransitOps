@@ -1,3 +1,6 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 export const exportToCSV = (data, filename) => {
   if (!data || !data.length) return;
 
@@ -37,4 +40,31 @@ export const exportToCSV = (data, filename) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+export const exportToPDF = (data, filename, title) => {
+  if (!data || !data.length) return;
+
+  const doc = new jsPDF();
+  
+  if (title) {
+    doc.setFontSize(16);
+    doc.text(title, 14, 15);
+  }
+
+  const headers = Object.keys(data[0]);
+  const rows = data.map(row => headers.map(header => {
+    let cell = row[header];
+    return cell !== null && cell !== undefined ? String(cell) : '';
+  }));
+
+  autoTable(doc, {
+    head: [headers.map(h => h.replace(/_/g, ' ').toUpperCase())],
+    body: rows,
+    startY: title ? 20 : 10,
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [37, 99, 235] } // blue-600
+  });
+
+  doc.save(filename);
 };

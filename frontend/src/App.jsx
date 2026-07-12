@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -31,14 +32,14 @@ const ProtectedRoute = ({ children }) => {
 const DashboardLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 transition-colors duration-200">
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
       <main className="flex-1 md:ml-64 flex flex-col min-h-screen overflow-hidden">
         {/* Mobile Topbar */}
-        <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200 p-4 shrink-0">
-          <h1 className="font-bold text-blue-600">TransitOps</h1>
-          <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-md">
+        <div className="md:hidden flex items-center justify-between bg-white dark:bg-neutral-800 border-b border-slate-200 dark:border-neutral-700 p-4 shrink-0 transition-colors duration-200">
+          <h1 className="font-bold text-blue-600 dark:text-blue-400">TransitOps</h1>
+          <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md">
             <Menu className="w-6 h-6" />
           </button>
         </div>
@@ -162,11 +163,13 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Edit2, AlertTriangle, Loader2, Download, Search } from 'lucide-react';
+import { Plus, Edit2, AlertTriangle, Loader2, Download, FileDown, Search } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
-import { exportToCSV } from '../utils/export';
+import { exportToCSV, exportToPDF } from '../utils/export';
 import { useTableData } from '../hooks/useTableData';
 import { SortableHeader } from '../components/ui/SortableHeader';
 
@@ -99,10 +99,10 @@ const Drivers = () => {
 
   const getStatusBadge = (status) => {
     const statusStyles = {
-      'Available': 'bg-emerald-100 text-emerald-700',
-      'On Duty': 'bg-blue-100 text-blue-700',
-      'Suspended': 'bg-red-100 text-red-700',
-      'Off Duty': 'bg-slate-100 text-slate-600',
+      'Available': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
+      'On Duty': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+      'Suspended': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+      'Off Duty': 'bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300',
     };
     return (
       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyles[status] || statusStyles['Off Duty']}`}>
@@ -122,8 +122,8 @@ const Drivers = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Driver Profiles</h1>
-          <p className="text-slate-500 mt-1">Manage personnel and monitor license validity</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100 tracking-tight">Driver Profiles</h1>
+          <p className="text-slate-500 dark:text-neutral-400 mt-1">Manage personnel and monitor license validity</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative">
@@ -135,6 +135,9 @@ const Drivers = () => {
               className="pl-9 w-64"
             />
           </div>
+          <Button onClick={() => exportToPDF(filteredAndSortedData, 'drivers_export.pdf', 'Driver Profiles Report')} variant="outline" className="flex items-center gap-2">
+            <FileDown className="w-4 h-4" /> Export PDF
+          </Button>
           <Button onClick={() => exportToCSV(filteredAndSortedData, 'drivers_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
@@ -146,12 +149,12 @@ const Drivers = () => {
         </div>
       </div>
 
-      <Card className="bg-white border-slate-200 shadow-sm">
+      <Card className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-700 shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 bg-slate-50/50">
+                <tr className="border-b border-slate-200 dark:border-neutral-700 text-xs uppercase tracking-wider text-slate-500 dark:text-neutral-400 bg-slate-50/50 dark:bg-neutral-800/50">
                   <SortableHeader label="Name" sortKey="name" requestSort={requestSort} sortConfig={sortConfig} />
                   <SortableHeader label="License No." sortKey="license_no" requestSort={requestSort} sortConfig={sortConfig} />
                   <SortableHeader label="Category" sortKey="license_category" requestSort={requestSort} sortConfig={sortConfig} />
@@ -165,27 +168,27 @@ const Drivers = () => {
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   <tr>
-                    <td colSpan="8" className="p-8 text-center text-slate-500">Loading drivers...</td>
+                    <td colSpan="8" className="p-8 text-center text-slate-500 dark:text-neutral-400">Loading drivers...</td>
                   </tr>
                 ) : filteredAndSortedData.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="p-8 text-center text-slate-500">No drivers found matching criteria.</td>
+                    <td colSpan="8" className="p-8 text-center text-slate-500 dark:text-neutral-400">No drivers found matching criteria.</td>
                   </tr>
                 ) : (
                   filteredAndSortedData.map((d) => {
                     const expiring = isExpiringSoon(d.license_expiry);
                     return (
-                      <tr key={d.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-4 font-medium text-slate-700">{d.name}</td>
-                        <td className="p-4 font-mono text-slate-500">{d.license_no}</td>
-                        <td className="p-4 text-slate-500">{d.license_category}</td>
+                      <tr key={d.id} className="hover:bg-slate-50/50 dark:hover:bg-neutral-800/50 transition-colors">
+                        <td className="p-4 font-medium text-slate-700 dark:text-neutral-300">{d.name}</td>
+                        <td className="p-4 font-mono text-slate-500 dark:text-neutral-400">{d.license_no}</td>
+                        <td className="p-4 text-slate-500 dark:text-neutral-400">{d.license_category}</td>
                         <td className="p-4">
-                          <span className={`flex items-center gap-2 ${expiring ? 'text-red-500 font-medium' : 'text-slate-500'}`}>
+                          <span className={`flex items-center gap-2 ${expiring ? 'text-red-500 font-medium' : 'text-slate-500 dark:text-neutral-400'}`}>
                             {new Date(d.license_expiry).toLocaleDateString()}
                             {expiring && <AlertTriangle className="w-4 h-4 text-amber-500" title="Expiring soon" />}
                           </span>
                         </td>
-                        <td className="p-4 text-slate-500">{d.contact_number}</td>
+                        <td className="p-4 text-slate-500 dark:text-neutral-400">{d.contact_number}</td>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
                             <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -194,13 +197,13 @@ const Drivers = () => {
                                 style={{ width: `${d.safety_score}%` }}
                               />
                             </div>
-                            <span className="text-xs text-slate-500 font-medium">{d.safety_score}%</span>
+                            <span className="text-xs text-slate-500 dark:text-neutral-400 font-medium">{d.safety_score}%</span>
                           </div>
                         </td>
                         <td className="p-4">{getStatusBadge(d.status)}</td>
                         <td className="p-4 text-right">
                           {(user?.role_name === 'Fleet Manager' || user?.role_name === 'Safety Officer') && (
-                            <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(d)} className="text-slate-500 hover:text-blue-600">
+                            <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(d)} className="text-slate-500 dark:text-neutral-400 hover:text-blue-600">
                               <Edit2 className="w-4 h-4 mr-1" /> Edit
                             </Button>
                           )}
@@ -263,7 +266,7 @@ const Drivers = () => {
                 name="license_category"
                 value={formData.license_category}
                 onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <option value="LMV">LMV (Light Motor Vehicle)</option>
                 <option value="HMV">HMV (Heavy Motor Vehicle)</option>
@@ -303,7 +306,7 @@ const Drivers = () => {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <option value="Available">Available</option>
                 <option value="On Duty">On Duty</option>
@@ -313,7 +316,7 @@ const Drivers = () => {
             </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-neutral-800">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>

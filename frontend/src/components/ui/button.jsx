@@ -13,10 +13,10 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
   const variants = {
     default: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
     destructive: "bg-red-500 text-white hover:bg-red-600 shadow-sm",
-    outline: "border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900",
-    secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200",
-    ghost: "hover:bg-slate-100 hover:text-slate-900",
-    link: "text-blue-600 underline-offset-4 hover:underline",
+    outline: "border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-900 dark:hover:text-neutral-100 text-slate-900 dark:text-neutral-100",
+    secondary: "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-neutral-100 hover:bg-slate-200 dark:hover:bg-neutral-700",
+    ghost: "hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-900 dark:hover:text-neutral-100 text-slate-900 dark:text-neutral-100",
+    link: "text-blue-600 dark:text-blue-400 underline-offset-4 hover:underline",
   }
   
   const sizes = {

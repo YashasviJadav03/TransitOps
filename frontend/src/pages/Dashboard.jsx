@@ -40,7 +40,7 @@ const Dashboard = () => {
     return (
       <div className="flex h-64 items-center justify-center flex-col gap-2">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-        <span className="text-slate-500 font-medium">Loading Analytics...</span>
+        <span className="text-slate-500 dark:text-neutral-400 font-medium">Loading Analytics...</span>
       </div>
     );
   }
@@ -49,16 +49,16 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Analytics Dashboard</h1>
-          <p className="text-slate-500 mt-1">Real-time overview of fleet operations and KPIs.</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100 tracking-tight">Analytics Dashboard</h1>
+          <p className="text-slate-500 dark:text-neutral-400 mt-1">Real-time overview of fleet operations and KPIs.</p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-600">Type:</span>
+            <span className="text-sm font-medium text-slate-600 dark:text-neutral-300">Type:</span>
             <select 
               value={vehicleTypeFilter} 
               onChange={(e) => setVehicleTypeFilter(e.target.value)}
-              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="h-10 rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="All">All Types</option>
               <option value="Truck">Trucks</option>
@@ -67,11 +67,11 @@ const Dashboard = () => {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-600">Status:</span>
+            <span className="text-sm font-medium text-slate-600 dark:text-neutral-300">Status:</span>
             <select 
               value={vehicleStatusFilter} 
               onChange={(e) => setVehicleStatusFilter(e.target.value)}
-              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="h-10 rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="All">All Statuses</option>
               <option value="Available">Available</option>
@@ -89,14 +89,14 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">Fleet Utilization</p>
-                <h3 className="text-3xl font-bold text-slate-900 mt-1">{stats.vehicles.utilization}%</h3>
+                <p className="text-sm font-medium text-slate-500 dark:text-neutral-400">Fleet Utilization</p>
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-neutral-100 mt-1">{stats.vehicles.utilization}%</h3>
               </div>
               <div className="p-3 bg-blue-50 rounded-full">
                 <Activity className="w-6 h-6 text-blue-600" />
               </div>
             </div>
-            <div className="mt-4 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div className="mt-4 h-2 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-blue-500 transition-all duration-1000 ease-out" 
                 style={{ width: `${stats.vehicles.utilization}%` }}
@@ -109,14 +109,14 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">Total Operational Cost</p>
-                <h3 className="text-3xl font-bold text-slate-900 mt-1">{formatCurrency(stats.finances.total_cost)}</h3>
+                <p className="text-sm font-medium text-slate-500 dark:text-neutral-400">Total Operational Cost</p>
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-neutral-100 mt-1">{formatCurrency(stats.finances.total_cost)}</h3>
               </div>
               <div className="p-3 bg-emerald-50 rounded-full">
                 <DollarSign className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-4">Lifetime combined fuel, maintenance, and expenses</p>
+            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-4">Lifetime combined fuel, maintenance, and expenses</p>
           </CardContent>
         </Card>
 
@@ -124,16 +124,16 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">Active Trips</p>
-                <h3 className="text-3xl font-bold text-slate-900 mt-1">{stats.trips.active}</h3>
+                <p className="text-sm font-medium text-slate-500 dark:text-neutral-400">Active Trips</p>
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-neutral-100 mt-1">{stats.trips.active}</h3>
               </div>
               <div className="p-3 bg-purple-50 rounded-full">
                 <MapPin className="w-6 h-6 text-purple-600" />
               </div>
             </div>
             <div className="flex items-center gap-4 mt-4 text-sm">
-              <span className="text-slate-500"><strong className="text-slate-700">{stats.trips.pending}</strong> Pending</span>
-              <span className="text-slate-500"><strong className="text-slate-700">{stats.trips.completed}</strong> Completed</span>
+              <span className="text-slate-500 dark:text-neutral-400"><strong className="text-slate-700 dark:text-neutral-300">{stats.trips.pending}</strong> Pending</span>
+              <span className="text-slate-500 dark:text-neutral-400"><strong className="text-slate-700 dark:text-neutral-300">{stats.trips.completed}</strong> Completed</span>
             </div>
           </CardContent>
         </Card>
@@ -144,7 +144,7 @@ const Dashboard = () => {
         <Card className="shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Truck className="w-5 h-5 text-slate-500" />
+              <Truck className="w-5 h-5 text-slate-500 dark:text-neutral-400" />
               <CardTitle>Vehicle Distribution</CardTitle>
             </div>
             <CardDescription>Status breakdown of the non-retired fleet.</CardDescription>
@@ -152,32 +152,32 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600">Available</span>
-                <span className="font-semibold text-slate-900">{stats.vehicles.available}</span>
+                <span className="text-slate-600 dark:text-neutral-300">Available</span>
+                <span className="font-semibold text-slate-900 dark:text-neutral-100">{stats.vehicles.available}</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
+              <div className="w-full bg-slate-100 dark:bg-neutral-800 rounded-full h-2">
                 <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${(stats.vehicles.available / Math.max(1, stats.vehicles.total)) * 100}%` }}></div>
               </div>
 
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600">On Trip</span>
-                <span className="font-semibold text-slate-900">{stats.vehicles.on_trip}</span>
+                <span className="text-slate-600 dark:text-neutral-300">On Trip</span>
+                <span className="font-semibold text-slate-900 dark:text-neutral-100">{stats.vehicles.on_trip}</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
+              <div className="w-full bg-slate-100 dark:bg-neutral-800 rounded-full h-2">
                 <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(stats.vehicles.on_trip / Math.max(1, stats.vehicles.total)) * 100}%` }}></div>
               </div>
 
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600">In Shop</span>
-                <span className="font-semibold text-slate-900">{stats.vehicles.in_shop}</span>
+                <span className="text-slate-600 dark:text-neutral-300">In Shop</span>
+                <span className="font-semibold text-slate-900 dark:text-neutral-100">{stats.vehicles.in_shop}</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
+              <div className="w-full bg-slate-100 dark:bg-neutral-800 rounded-full h-2">
                 <div className="bg-amber-500 h-2 rounded-full" style={{ width: `${(stats.vehicles.in_shop / Math.max(1, stats.vehicles.total)) * 100}%` }}></div>
               </div>
               
-              <div className="pt-4 mt-2 border-t border-slate-100 flex justify-between text-sm font-medium">
-                <span className="text-slate-500">Total Filtered Active Fleet</span>
-                <span className="text-slate-900">{stats.vehicles.total}</span>
+              <div className="pt-4 mt-2 border-t border-slate-100 dark:border-neutral-800 flex justify-between text-sm font-medium">
+                <span className="text-slate-500 dark:text-neutral-400">Total Filtered Active Fleet</span>
+                <span className="text-slate-900 dark:text-neutral-100">{stats.vehicles.total}</span>
               </div>
             </div>
           </CardContent>
@@ -186,7 +186,7 @@ const Dashboard = () => {
         <Card className="shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-slate-500" />
+              <Users className="w-5 h-5 text-slate-500 dark:text-neutral-400" />
               <CardTitle>Driver Distribution</CardTitle>
             </div>
             <CardDescription>Status breakdown of the entire driver pool.</CardDescription>
@@ -194,32 +194,32 @@ const Dashboard = () => {
           <CardContent>
              <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600">Available</span>
-                <span className="font-semibold text-slate-900">{stats.drivers.available}</span>
+                <span className="text-slate-600 dark:text-neutral-300">Available</span>
+                <span className="font-semibold text-slate-900 dark:text-neutral-100">{stats.drivers.available}</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
+              <div className="w-full bg-slate-100 dark:bg-neutral-800 rounded-full h-2">
                 <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${(stats.drivers.available / Math.max(1, stats.drivers.total)) * 100}%` }}></div>
               </div>
 
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600">On Duty (On Trip)</span>
-                <span className="font-semibold text-slate-900">{stats.drivers.on_duty}</span>
+                <span className="text-slate-600 dark:text-neutral-300">On Duty (On Trip)</span>
+                <span className="font-semibold text-slate-900 dark:text-neutral-100">{stats.drivers.on_duty}</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
+              <div className="w-full bg-slate-100 dark:bg-neutral-800 rounded-full h-2">
                 <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(stats.drivers.on_duty / Math.max(1, stats.drivers.total)) * 100}%` }}></div>
               </div>
 
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600">Other (Suspended / Off Duty)</span>
-                <span className="font-semibold text-slate-900">{stats.drivers.total - stats.drivers.available - stats.drivers.on_duty}</span>
+                <span className="text-slate-600 dark:text-neutral-300">Other (Suspended / Off Duty)</span>
+                <span className="font-semibold text-slate-900 dark:text-neutral-100">{stats.drivers.total - stats.drivers.available - stats.drivers.on_duty}</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
+              <div className="w-full bg-slate-100 dark:bg-neutral-800 rounded-full h-2">
                 <div className="bg-slate-400 h-2 rounded-full" style={{ width: `${((stats.drivers.total - stats.drivers.available - stats.drivers.on_duty) / Math.max(1, stats.drivers.total)) * 100}%` }}></div>
               </div>
 
-              <div className="pt-4 mt-2 border-t border-slate-100 flex justify-between text-sm font-medium">
-                <span className="text-slate-500">Total Registered Drivers</span>
-                <span className="text-slate-900">{stats.drivers.total}</span>
+              <div className="pt-4 mt-2 border-t border-slate-100 dark:border-neutral-800 flex justify-between text-sm font-medium">
+                <span className="text-slate-500 dark:text-neutral-400">Total Registered Drivers</span>
+                <span className="text-slate-900 dark:text-neutral-100">{stats.drivers.total}</span>
               </div>
             </div>
           </CardContent>
@@ -230,7 +230,7 @@ const Dashboard = () => {
       <Card className="shadow-sm mt-6">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-slate-500" />
+            <Activity className="w-5 h-5 text-slate-500 dark:text-neutral-400" />
             <CardTitle>Financial Trends (6 Months)</CardTitle>
           </div>
           <CardDescription>Historical aggregation of fuel, maintenance, and general expenses.</CardDescription>

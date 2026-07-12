@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -66,10 +68,32 @@
 
 @layer base {
   * {
-    @apply border-slate-200;
+    @apply border-slate-200 dark:border-neutral-800;
   }
 
   body {
-    @apply bg-slate-50 text-slate-950;
+    @apply bg-slate-50 dark:bg-black text-slate-950 dark:text-slate-50;
   }
+}
+
+.dark .recharts-default-tooltip {
+  background-color: #171717 !important; /* neutral-900 */
+  border-color: #262626 !important; /* neutral-800 */
+  color: #f5f5f5 !important; /* neutral-100 */
+}
+
+.dark .recharts-tooltip-item {
+  color: #f5f5f5 !important;
+}
+
+.dark .recharts-text {
+  fill: #d4d4d8 !important; /* neutral-300 */
+}
+
+.dark .recharts-cartesian-grid line {
+  stroke: #262626 !important; /* neutral-800 */
+}
+
+.dark .recharts-tooltip-cursor {
+  fill: #262626 !important; /* neutral-800 */
 }

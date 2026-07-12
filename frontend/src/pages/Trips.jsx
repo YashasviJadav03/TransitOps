@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { MapPin, Plus, CheckCircle2, PlayCircle, XCircle, Download, Search } from 'lucide-react';
+import { MapPin, Plus, CheckCircle2, PlayCircle, XCircle, Download, FileDown, Search } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
-import { exportToCSV } from '../utils/export';
+import { exportToCSV, exportToPDF } from '../utils/export';
 import { useTableData } from '../hooks/useTableData';
 import { SortableHeader } from '../components/ui/SortableHeader';
 
@@ -184,6 +184,9 @@ const Trips = () => {
               className="pl-9 w-64"
             />
           </div>
+          <Button onClick={() => exportToPDF(filteredAndSortedData, 'trips_export.pdf', 'Trip Management Report')} variant="outline" className="flex items-center gap-2">
+            <FileDown className="w-4 h-4" /> Export PDF
+          </Button>
           <Button onClick={() => exportToCSV(filteredAndSortedData, 'trips_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
@@ -215,23 +218,23 @@ const Trips = () => {
               <tbody>
                 {filteredAndSortedData.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan="7" className="px-4 py-8 text-center text-slate-500 dark:text-neutral-400">
                       No trips found matching criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredAndSortedData.map((trip) => (
-                    <tr key={trip.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                    <tr key={trip.id} className="border-b border-slate-100 dark:border-neutral-800 hover:bg-slate-50/50 dark:hover:bg-neutral-800/50">
                       <td className="px-4 py-3 font-medium">
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4 text-blue-500" />
                           <span>{trip.source} → {trip.destination}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-600">{trip.registration_number}</td>
-                      <td className="px-4 py-3 text-slate-600">{trip.driver_name}</td>
-                      <td className="px-4 py-3 text-slate-600">{trip.cargo_weight_kg}</td>
-                      <td className="px-4 py-3 text-slate-600">{trip.planned_distance_km}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{trip.registration_number}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{trip.driver_name}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{trip.cargo_weight_kg}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{trip.planned_distance_km}</td>
                       <td className="px-4 py-3">{getStatusBadge(trip.status)}</td>
                       <td className="px-4 py-3 text-right space-x-2">
                         {trip.status === 'Draft' && (

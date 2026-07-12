@@ -6,7 +6,7 @@ export const SortableHeader = ({ label, sortKey, requestSort, sortConfig, classN
   
   return (
     <th 
-      className={`p-4 font-semibold cursor-pointer select-none hover:text-slate-900 transition-colors ${className}`}
+      className={`p-4 font-semibold cursor-pointer select-none hover:text-slate-900 dark:hover:text-neutral-100 transition-colors ${className}`}
       onClick={() => requestSort(sortKey)}
     >
       <div className={`flex items-center gap-1 ${className.includes('text-right') ? 'justify-end' : ''}`}>

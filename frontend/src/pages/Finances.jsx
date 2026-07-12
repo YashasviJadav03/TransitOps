@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Plus, Fuel, FileText, Download, Droplet, Calendar, Search } from 'lucide-react';
+import { Plus, Fuel, FileText, Download, Droplet, Calendar, Search, FileDown } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
-import { exportToCSV } from '../utils/export';
+import { exportToCSV, exportToPDF } from '../utils/export';
 import { useTableData } from '../hooks/useTableData';
 import { SortableHeader } from '../components/ui/SortableHeader';
 
@@ -123,8 +123,8 @@ const Finances = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Financial Overview</h1>
-          <p className="text-slate-500 mt-1">Track operational costs and vehicle expenses.</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100 tracking-tight">Financial Overview</h1>
+          <p className="text-slate-500 dark:text-neutral-400 mt-1">Track operational costs and vehicle expenses.</p>
         </div>
         <div className="flex gap-3 flex-wrap">
           <div className="relative">
@@ -136,6 +136,9 @@ const Finances = () => {
               className="pl-9 w-64"
             />
           </div>
+          <Button onClick={() => exportToPDF(filteredAndSortedData, 'finances_export.pdf', 'Financial Overview Report')} variant="outline" className="flex items-center gap-2">
+            <FileDown className="w-4 h-4" /> Export PDF
+          </Button>
           <Button onClick={() => exportToCSV(filteredAndSortedData, 'finances_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
@@ -163,7 +166,7 @@ const Finances = () => {
                 if (e.target.value === 'year') setFilterValue(new Date().getFullYear().toString());
                 if (e.target.value === 'month') setFilterValue(new Date().toISOString().slice(0, 7));
               }}
-              className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+              className="h-9 rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="lifetime">Lifetime</option>
               <option value="year">By Year</option>
@@ -191,35 +194,35 @@ const Finances = () => {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+              <thead className="text-xs text-slate-500 dark:text-neutral-400 uppercase bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-700">
                 <tr>
                   <SortableHeader label="Vehicle" sortKey="registration_number" requestSort={requestSort} sortConfig={sortConfig} />
                   <SortableHeader label="Fuel Cost" sortKey="total_fuel_cost" requestSort={requestSort} sortConfig={sortConfig} className="text-right" />
                   <SortableHeader label="Maintenance Cost" sortKey="total_maint_cost" requestSort={requestSort} sortConfig={sortConfig} className="text-right" />
                   <SortableHeader label="Tolls & Other" sortKey="total_other_cost" requestSort={requestSort} sortConfig={sortConfig} className="text-right" />
-                  <SortableHeader label="Total Cost" sortKey="grand_total" requestSort={requestSort} sortConfig={sortConfig} className="text-right font-bold text-slate-900" />
+                  <SortableHeader label="Total Cost" sortKey="grand_total" requestSort={requestSort} sortConfig={sortConfig} className="text-right font-bold text-slate-900 dark:text-neutral-100" />
                 </tr>
               </thead>
               <tbody>
                 {filteredAndSortedData.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan="5" className="px-4 py-8 text-center text-slate-500 dark:text-neutral-400">
                       No cost data available for the selected period matching criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredAndSortedData.map((c) => (
-                    <tr key={c.vehicle_id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                    <tr key={c.vehicle_id} className="border-b border-slate-100 dark:border-neutral-800 hover:bg-slate-50/50 dark:hover:bg-neutral-800/50">
                       <td className="px-4 py-3 font-medium">
                         <div className="flex flex-col">
                           <span>{c.registration_number}</span>
-                          <span className="text-xs text-slate-500">{c.name_model}</span>
+                          <span className="text-xs text-slate-500 dark:text-neutral-400">{c.name_model}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right text-slate-600">{formatCurrency(c.total_fuel_cost)}</td>
-                      <td className="px-4 py-3 text-right text-slate-600">{formatCurrency(c.total_maint_cost)}</td>
-                      <td className="px-4 py-3 text-right text-slate-600">{formatCurrency(c.total_other_cost)}</td>
-                      <td className="px-4 py-3 text-right font-bold text-slate-900">{formatCurrency(c.grand_total)}</td>
+                      <td className="px-4 py-3 text-right text-slate-600 dark:text-neutral-300">{formatCurrency(c.total_fuel_cost)}</td>
+                      <td className="px-4 py-3 text-right text-slate-600 dark:text-neutral-300">{formatCurrency(c.total_maint_cost)}</td>
+                      <td className="px-4 py-3 text-right text-slate-600 dark:text-neutral-300">{formatCurrency(c.total_other_cost)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-neutral-100">{formatCurrency(c.grand_total)}</td>
                     </tr>
                   ))
                 )}
@@ -240,7 +243,7 @@ const Finances = () => {
               required
               value={fuelData.vehicle_id}
               onChange={(e) => setFuelData({ ...fuelData, vehicle_id: e.target.value })}
-              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Select a vehicle...</option>
               {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number} - {v.name_model}</option>)}
@@ -281,7 +284,7 @@ const Finances = () => {
               required
               value={expenseData.vehicle_id}
               onChange={(e) => setExpenseData({ ...expenseData, vehicle_id: e.target.value })}
-              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Select a vehicle...</option>
               {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
@@ -293,7 +296,7 @@ const Finances = () => {
             <select
               value={expenseData.trip_id}
               onChange={(e) => setExpenseData({ ...expenseData, trip_id: e.target.value })}
-              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">None</option>
               {trips.map(t => <option key={t.id} value={t.id}>{t.source} to {t.destination} ({new Date(t.created_at).toLocaleDateString()})</option>)}

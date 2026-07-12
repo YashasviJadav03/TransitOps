@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Edit2, Loader2, Download, Search } from 'lucide-react';
+import { Plus, Edit2, Loader2, Download, FileDown, Search } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
-import { exportToCSV } from '../utils/export';
+import { exportToCSV, exportToPDF } from '../utils/export';
 import { useTableData } from '../hooks/useTableData';
 import { SortableHeader } from '../components/ui/SortableHeader';
 
@@ -99,10 +99,10 @@ const Vehicles = () => {
 
   const getStatusBadge = (status) => {
     const statusStyles = {
-      'Available': 'bg-emerald-100 text-emerald-700',
-      'On Trip': 'bg-blue-100 text-blue-700',
-      'In Shop': 'bg-amber-100 text-amber-700',
-      'Retired': 'bg-slate-100 text-slate-600',
+      'Available': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
+      'On Trip': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+      'In Shop': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+      'Retired': 'bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300',
     };
     return (
       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyles[status] || statusStyles['Retired']}`}>
@@ -115,8 +115,8 @@ const Vehicles = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Fleet Registry</h1>
-          <p className="text-slate-500 mt-1">Manage and track all company vehicles</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100 tracking-tight">Fleet Registry</h1>
+          <p className="text-slate-500 dark:text-neutral-400 mt-1">Manage and track all company vehicles</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative">
@@ -128,6 +128,9 @@ const Vehicles = () => {
               className="pl-9 w-64"
             />
           </div>
+          <Button onClick={() => exportToPDF(filteredAndSortedData, 'vehicles_export.pdf', 'Fleet Registry Report')} variant="outline" className="flex items-center gap-2">
+            <FileDown className="w-4 h-4" /> Export PDF
+          </Button>
           <Button onClick={() => exportToCSV(filteredAndSortedData, 'vehicles_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
@@ -139,12 +142,12 @@ const Vehicles = () => {
         </div>
       </div>
 
-      <Card className="bg-white border-slate-200 shadow-sm">
+      <Card className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-700 shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 bg-slate-50/50">
+                <tr className="border-b border-slate-200 dark:border-neutral-700 text-xs uppercase tracking-wider text-slate-500 dark:text-neutral-400 bg-slate-50/50 dark:bg-neutral-800/50">
                   <SortableHeader label="Reg. Number" sortKey="registration_number" requestSort={requestSort} sortConfig={sortConfig} />
                   <SortableHeader label="Model" sortKey="name_model" requestSort={requestSort} sortConfig={sortConfig} />
                   <SortableHeader label="Type" sortKey="type" requestSort={requestSort} sortConfig={sortConfig} />
@@ -157,24 +160,24 @@ const Vehicles = () => {
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="p-8 text-center text-slate-500">Loading vehicles...</td>
+                    <td colSpan="7" className="p-8 text-center text-slate-500 dark:text-neutral-400">Loading vehicles...</td>
                   </tr>
                 ) : filteredAndSortedData.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="p-8 text-center text-slate-500">No vehicles found matching criteria.</td>
+                    <td colSpan="7" className="p-8 text-center text-slate-500 dark:text-neutral-400">No vehicles found matching criteria.</td>
                   </tr>
                 ) : (
                   filteredAndSortedData.map((v) => (
-                    <tr key={v.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4 font-mono font-medium text-slate-700">{v.registration_number}</td>
-                      <td className="p-4 text-slate-700">{v.name_model}</td>
-                      <td className="p-4 text-slate-500">{v.type}</td>
-                      <td className="p-4 text-slate-500">{v.max_capacity_kg.toLocaleString()}</td>
-                      <td className="p-4 text-slate-500">{v.odometer.toLocaleString()} km</td>
+                    <tr key={v.id} className="hover:bg-slate-50/50 dark:hover:bg-neutral-800/50 transition-colors">
+                      <td className="p-4 font-mono font-medium text-slate-700 dark:text-neutral-300">{v.registration_number}</td>
+                      <td className="p-4 text-slate-700 dark:text-neutral-300">{v.name_model}</td>
+                      <td className="p-4 text-slate-500 dark:text-neutral-400">{v.type}</td>
+                      <td className="p-4 text-slate-500 dark:text-neutral-400">{v.max_capacity_kg.toLocaleString()}</td>
+                      <td className="p-4 text-slate-500 dark:text-neutral-400">{v.odometer.toLocaleString()} km</td>
                       <td className="p-4">{getStatusBadge(v.status)}</td>
                       <td className="p-4 text-right">
                         {user?.role_name === 'Fleet Manager' && (
-                          <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(v)} className="text-slate-500 hover:text-blue-600">
+                          <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(v)} className="text-slate-500 dark:text-neutral-400 hover:text-blue-600">
                             <Edit2 className="w-4 h-4 mr-1" /> Edit
                           </Button>
                         )}
@@ -236,7 +239,7 @@ const Vehicles = () => {
                 name="type"
                 value={formData.type}
                 onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <option value="Truck">Truck</option>
                 <option value="Van">Van</option>
@@ -250,7 +253,7 @@ const Vehicles = () => {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <option value="Available">Available</option>
                 <option value="On Trip">On Trip</option>
@@ -298,7 +301,7 @@ const Vehicles = () => {
             </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-neutral-800">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>

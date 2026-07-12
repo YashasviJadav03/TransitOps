@@ -9,13 +9,10 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const pool = new Pool({
-  user: process.env.POSTGRES_USER || 'postgres',
-  host: process.env.POSTGRES_HOST || 'localhost',
-  database: process.env.POSTGRES_DB || 'transitops',
-  password: process.env.POSTGRES_PASSWORD || 'postgres',
-  port: process.env.POSTGRES_PORT || 5432,
-});
+const authRoutes = require('./routes/authRoutes');
+const pool = require('./db');
+
+app.use('/api/auth', authRoutes);
 
 app.get('/health', async (req, res) => {
   try {

@@ -137,7 +137,7 @@ const Maintenance = () => {
                   <th className="px-6 py-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
                 {filteredAndSortedData.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="p-8 text-center text-slate-500 dark:text-neutral-400">No maintenance logs found matching criteria.</td>
@@ -151,11 +151,11 @@ const Maintenance = () => {
                       <td className="px-6 py-4 text-slate-600 dark:text-neutral-300">
                         {log.registration_number} <span className="text-xs text-slate-400">({log.name_model})</span>
                       </td>
-                      <td className="px-6 py-4 text-slate-600 flex items-center gap-2">
+                      <td className="px-6 py-4 text-slate-600 dark:text-neutral-300 flex items-center gap-2">
                         <Wrench className="w-4 h-4 text-slate-400" />
                         {log.service_type}
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-medium">
+                      <td className="px-6 py-4 text-slate-600 dark:text-neutral-300 font-medium">
                         ${Number(log.cost).toLocaleString()}
                       </td>
                       <td className="px-6 py-4">{getStatusBadge(log.status)}</td>

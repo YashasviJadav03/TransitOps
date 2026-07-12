@@ -172,8 +172,8 @@ const Trips = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Trip Management</h1>
-          <p className="text-sm text-slate-500">Plan and dispatch active trips.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">Trip Management</h1>
+          <p className="text-sm text-slate-500 dark:text-neutral-400">Plan and dispatch active trips.</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative">
@@ -204,8 +204,8 @@ const Trips = () => {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+            <table className="w-full text-sm text-left text-slate-700 dark:text-neutral-300">
+              <thead className="text-xs text-slate-500 dark:text-neutral-400 uppercase bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-700">
                 <tr>
                   <SortableHeader label="Route" sortKey="source" requestSort={requestSort} sortConfig={sortConfig} />
                   <SortableHeader label="Vehicle" sortKey="registration_number" requestSort={requestSort} sortConfig={sortConfig} />
@@ -226,7 +226,7 @@ const Trips = () => {
                 ) : (
                   filteredAndSortedData.map((trip) => (
                     <tr key={trip.id} className="border-b border-slate-100 dark:border-neutral-800 hover:bg-slate-50/50 dark:hover:bg-neutral-800/50">
-                      <td className="px-4 py-3 font-medium">
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-neutral-100">
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4 text-blue-500" />
                           <span>{trip.source} → {trip.destination}</span>

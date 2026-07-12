@@ -2,17 +2,21 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Edit2, AlertTriangle, Loader2, Download } from 'lucide-react';
+import { Plus, Edit2, AlertTriangle, Loader2, Download, Search } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
 import { exportToCSV } from '../utils/export';
+import { useTableData } from '../hooks/useTableData';
+import { SortableHeader } from '../components/ui/SortableHeader';
 
 const Drivers = () => {
   const { user } = useAuth();
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const { filteredAndSortedData, searchQuery, setSearchQuery, requestSort, sortConfig } = useTableData(drivers, ['name', 'license_no', 'license_category', 'status']);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,13 +120,22 @@ const Drivers = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Driver Profiles</h1>
           <p className="text-slate-500 mt-1">Manage personnel and monitor license validity</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button onClick={() => exportToCSV(drivers, 'drivers_export.csv')} variant="outline" className="flex items-center gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              placeholder="Search drivers..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
+          <Button onClick={() => exportToCSV(filteredAndSortedData, 'drivers_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
           {(user?.role_name === 'Fleet Manager' || user?.role_name === 'Safety Officer') && (
@@ -139,13 +152,13 @@ const Drivers = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 bg-slate-50/50">
-                  <th className="p-4 font-semibold">Name</th>
-                  <th className="p-4 font-semibold">License No.</th>
-                  <th className="p-4 font-semibold">Category</th>
-                  <th className="p-4 font-semibold">Expiry Date</th>
-                  <th className="p-4 font-semibold">Contact</th>
-                  <th className="p-4 font-semibold">Safety Score</th>
-                  <th className="p-4 font-semibold">Status</th>
+                  <SortableHeader label="Name" sortKey="name" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="License No." sortKey="license_no" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Category" sortKey="license_category" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Expiry Date" sortKey="license_expiry" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Contact" sortKey="contact_number" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Safety Score" sortKey="safety_score" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Status" sortKey="status" requestSort={requestSort} sortConfig={sortConfig} />
                   <th className="p-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
@@ -154,12 +167,12 @@ const Drivers = () => {
                   <tr>
                     <td colSpan="8" className="p-8 text-center text-slate-500">Loading drivers...</td>
                   </tr>
-                ) : drivers.length === 0 ? (
+                ) : filteredAndSortedData.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="p-8 text-center text-slate-500">No drivers found.</td>
+                    <td colSpan="8" className="p-8 text-center text-slate-500">No drivers found matching criteria.</td>
                   </tr>
                 ) : (
-                  drivers.map((d) => {
+                  filteredAndSortedData.map((d) => {
                     const expiring = isExpiringSoon(d.license_expiry);
                     return (
                       <tr key={d.id} className="hover:bg-slate-50/50 transition-colors">

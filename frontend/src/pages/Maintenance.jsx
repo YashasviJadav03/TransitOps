@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Plus, CheckCircle2, Wrench, Download } from 'lucide-react';
+import { Plus, CheckCircle2, Wrench, Download, Search } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { exportToCSV } from '../utils/export';
+import { useTableData } from '../hooks/useTableData';
+import { SortableHeader } from '../components/ui/SortableHeader';
 
 const Maintenance = () => {
   const [logs, setLogs] = useState([]);
@@ -14,6 +16,8 @@ const Maintenance = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const { filteredAndSortedData, searchQuery, setSearchQuery, requestSort, sortConfig } = useTableData(logs, ['registration_number', 'service_type', 'status', 'service_date']);
 
   const [formData, setFormData] = useState({
     vehicle_id: '',
@@ -87,13 +91,22 @@ const Maintenance = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Maintenance Workflow</h1>
           <p className="text-slate-500 mt-1">Log vehicle service and track fleet health.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button onClick={() => exportToCSV(logs, 'maintenance_export.csv')} variant="outline" className="flex items-center gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              placeholder="Search maintenance..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
+          <Button onClick={() => exportToCSV(filteredAndSortedData, 'maintenance_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
           <Button onClick={() => { setError(null); setIsModalOpen(true); }} className="gap-2 bg-blue-600 hover:bg-blue-700">
@@ -112,21 +125,21 @@ const Maintenance = () => {
             <table className="w-full text-left text-sm border-collapse">
               <thead className="text-xs uppercase tracking-wider text-slate-500 bg-slate-50/50">
                 <tr className="border-b border-slate-200">
-                  <th className="px-6 py-4 font-semibold">Service Date</th>
-                  <th className="px-6 py-4 font-semibold">Vehicle</th>
-                  <th className="px-6 py-4 font-semibold">Service Type</th>
-                  <th className="px-6 py-4 font-semibold">Cost ($)</th>
-                  <th className="px-6 py-4 font-semibold">Status</th>
+                  <SortableHeader label="Service Date" sortKey="service_date" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Vehicle" sortKey="registration_number" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Service Type" sortKey="service_type" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Cost ($)" sortKey="cost" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Status" sortKey="status" requestSort={requestSort} sortConfig={sortConfig} />
                   <th className="px-6 py-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {logs.length === 0 ? (
+                {filteredAndSortedData.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="p-8 text-center text-slate-500">No maintenance logs found.</td>
+                    <td colSpan="6" className="p-8 text-center text-slate-500">No maintenance logs found matching criteria.</td>
                   </tr>
                 ) : (
-                  logs.map((log) => (
+                  filteredAndSortedData.map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4 font-medium text-slate-700">
                         {new Date(log.service_date).toLocaleDateString()}

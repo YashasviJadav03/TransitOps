@@ -2,17 +2,21 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Edit2, Loader2, Download } from 'lucide-react';
+import { Plus, Edit2, Loader2, Download, Search } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
 import { exportToCSV } from '../utils/export';
+import { useTableData } from '../hooks/useTableData';
+import { SortableHeader } from '../components/ui/SortableHeader';
 
 const Vehicles = () => {
   const { user } = useAuth();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const { filteredAndSortedData, searchQuery, setSearchQuery, requestSort, sortConfig } = useTableData(vehicles, ['registration_number', 'name_model', 'type', 'status']);
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,13 +113,22 @@ const Vehicles = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Fleet Registry</h1>
           <p className="text-slate-500 mt-1">Manage and track all company vehicles</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button onClick={() => exportToCSV(vehicles, 'vehicles_export.csv')} variant="outline" className="flex items-center gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              placeholder="Search vehicles..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
+          <Button onClick={() => exportToCSV(filteredAndSortedData, 'vehicles_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
           {user?.role_name === 'Fleet Manager' && (
@@ -132,12 +145,12 @@ const Vehicles = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 bg-slate-50/50">
-                  <th className="p-4 font-semibold">Reg. Number</th>
-                  <th className="p-4 font-semibold">Model</th>
-                  <th className="p-4 font-semibold">Type</th>
-                  <th className="p-4 font-semibold">Capacity (kg)</th>
-                  <th className="p-4 font-semibold">Odometer</th>
-                  <th className="p-4 font-semibold">Status</th>
+                  <SortableHeader label="Reg. Number" sortKey="registration_number" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Model" sortKey="name_model" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Type" sortKey="type" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Capacity (kg)" sortKey="max_capacity_kg" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Odometer" sortKey="odometer" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Status" sortKey="status" requestSort={requestSort} sortConfig={sortConfig} />
                   <th className="p-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
@@ -146,12 +159,12 @@ const Vehicles = () => {
                   <tr>
                     <td colSpan="7" className="p-8 text-center text-slate-500">Loading vehicles...</td>
                   </tr>
-                ) : vehicles.length === 0 ? (
+                ) : filteredAndSortedData.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="p-8 text-center text-slate-500">No vehicles found.</td>
+                    <td colSpan="7" className="p-8 text-center text-slate-500">No vehicles found matching criteria.</td>
                   </tr>
                 ) : (
-                  vehicles.map((v) => (
+                  filteredAndSortedData.map((v) => (
                     <tr key={v.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="p-4 font-mono font-medium text-slate-700">{v.registration_number}</td>
                       <td className="p-4 text-slate-700">{v.name_model}</td>

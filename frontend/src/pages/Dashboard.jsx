@@ -7,38 +7,40 @@ import { Activity, Truck, Users, MapPin, DollarSign, Wrench, Loader2 } from 'luc
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [chartData, setChartData] = useState([]);
-  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('All');
+  const [vehicleStatusFilter, setVehicleStatusFilter] = useState('All');
 
   useEffect(() => {
-    const fetchStatsAndChart = async () => {
+    const fetchDashboardData = async () => {
       try {
+        setLoading(true);
         const [statsRes, chartRes] = await Promise.all([
-          axios.get('/dashboard/stats', { params: { vehicleType: vehicleTypeFilter } }),
-          axios.get('/dashboard/chart')
+          axios.get(`/dashboard/stats?vehicleType=${vehicleTypeFilter}&vehicleStatus=${vehicleStatusFilter}`),
+          axios.get(`/dashboard/chart?vehicleType=${vehicleTypeFilter}&vehicleStatus=${vehicleStatusFilter}`)
         ]);
         setStats(statsRes.data.data);
         setChartData(chartRes.data.data);
-      } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error);
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+        setError('Failed to load dashboard data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
-    fetchStatsAndChart();
-  }, [vehicleTypeFilter]);
+    fetchDashboardData();
+  }, [vehicleTypeFilter, vehicleStatusFilter]);
 
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
   };
 
-  if (loading || !stats) {
+  if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="text-blue-500 flex flex-col items-center gap-2">
-          <Loader2 className="w-8 h-8 animate-spin" />
-          <span className="text-slate-500 font-medium">Loading Analytics...</span>
-        </div>
+      <div className="flex h-64 items-center justify-center flex-col gap-2">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        <span className="text-slate-500 font-medium">Loading Analytics...</span>
       </div>
     );
   }
@@ -50,18 +52,34 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Analytics Dashboard</h1>
           <p className="text-slate-500 mt-1">Real-time overview of fleet operations and KPIs.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-600">Filter Vehicles:</span>
-          <select 
-            value={vehicleTypeFilter} 
-            onChange={(e) => setVehicleTypeFilter(e.target.value)}
-            className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="All">All Types</option>
-            <option value="Truck">Trucks Only</option>
-            <option value="Van">Vans Only</option>
-            <option value="Mini">Minis Only</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-600">Type:</span>
+            <select 
+              value={vehicleTypeFilter} 
+              onChange={(e) => setVehicleTypeFilter(e.target.value)}
+              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="All">All Types</option>
+              <option value="Truck">Trucks</option>
+              <option value="Van">Vans</option>
+              <option value="Mini">Minis</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-600">Status:</span>
+            <select 
+              value={vehicleStatusFilter} 
+              onChange={(e) => setVehicleStatusFilter(e.target.value)}
+              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Available">Available</option>
+              <option value="On Trip">On Trip</option>
+              <option value="In Shop">In Shop</option>
+              <option value="Retired">Retired</option>
+            </select>
+          </div>
         </div>
       </div>
 

@@ -1,11 +1,23 @@
 const pool = require('../db');
 
 const getDashboardStats = async (req, res) => {
-  const { vehicleType } = req.query; // 'All', 'Truck', 'Van', 'Mini'
+  const { vehicleType, vehicleStatus } = req.query; // vehicleType: 'All', 'Truck', 'Van', 'Mini'. vehicleStatus: 'All', 'Available', 'On Trip', 'In Shop', 'Retired'
 
   try {
     const typeFilter = vehicleType && vehicleType !== 'All' ? `AND type = $1` : '';
-    const queryParams = typeFilter ? [vehicleType] : [];
+    let statusFilter = vehicleStatus && vehicleStatus !== 'All' ? `AND status = $2` : `AND status != 'Retired'`;
+    
+    // If no typeFilter is present, $1 will be vehicleStatus. Adjust queryParams logic:
+    const queryParams = [];
+    if (typeFilter) queryParams.push(vehicleType);
+    
+    let statusIndex = typeFilter ? 2 : 1;
+    if (vehicleStatus && vehicleStatus !== 'All') {
+      statusFilter = `AND status = $${statusIndex}`;
+      queryParams.push(vehicleStatus);
+    } else {
+      statusFilter = `AND status != 'Retired'`;
+    }
 
     // 1. Vehicle Stats
     const vehicleQuery = `
@@ -15,7 +27,7 @@ const getDashboardStats = async (req, res) => {
         COUNT(CASE WHEN status = 'On Trip' THEN 1 END) as on_trip,
         COUNT(CASE WHEN status = 'In Shop' THEN 1 END) as in_shop
       FROM vehicles 
-      WHERE status != 'Retired' ${typeFilter}
+      WHERE 1=1 ${typeFilter} ${statusFilter}
     `;
     const vehicleResult = await pool.query(vehicleQuery, queryParams);
     const vehicleStats = vehicleResult.rows[0];

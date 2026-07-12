@@ -4,14 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Plus, Fuel, FileText, Download, Droplet, Calendar } from 'lucide-react';
+import { Plus, Fuel, FileText, Download, Droplet, Calendar, Search } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { exportToCSV } from '../utils/export';
+import { useTableData } from '../hooks/useTableData';
+import { SortableHeader } from '../components/ui/SortableHeader';
 
 const Finances = () => {
   const [costs, setCosts] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [trips, setTrips] = useState([]);
+
+  const { filteredAndSortedData, searchQuery, setSearchQuery, requestSort, sortConfig } = useTableData(costs, ['registration_number']);
 
   // Filters
   const [filterType, setFilterType] = useState('lifetime'); // 'lifetime', 'month', 'year'
@@ -122,8 +126,17 @@ const Finances = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Financial Overview</h1>
           <p className="text-slate-500 mt-1">Track operational costs and vehicle expenses.</p>
         </div>
-        <div className="flex gap-3">
-          <Button onClick={() => exportToCSV(costs, 'finances_export.csv')} variant="outline" className="flex items-center gap-2">
+        <div className="flex gap-3 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              placeholder="Search finances..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
+          <Button onClick={() => exportToCSV(filteredAndSortedData, 'finances_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
           <Button onClick={() => { setError(null); setIsFuelModalOpen(true); }} className="gap-2 bg-blue-600 hover:bg-blue-700">
@@ -180,22 +193,22 @@ const Finances = () => {
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="px-4 py-3">Vehicle</th>
-                  <th className="px-4 py-3 text-right">Fuel Cost</th>
-                  <th className="px-4 py-3 text-right">Maintenance Cost</th>
-                  <th className="px-4 py-3 text-right">Tolls & Other</th>
-                  <th className="px-4 py-3 text-right font-bold text-slate-900">Total Cost</th>
+                  <SortableHeader label="Vehicle" sortKey="registration_number" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Fuel Cost" sortKey="total_fuel_cost" requestSort={requestSort} sortConfig={sortConfig} className="text-right" />
+                  <SortableHeader label="Maintenance Cost" sortKey="total_maint_cost" requestSort={requestSort} sortConfig={sortConfig} className="text-right" />
+                  <SortableHeader label="Tolls & Other" sortKey="total_other_cost" requestSort={requestSort} sortConfig={sortConfig} className="text-right" />
+                  <SortableHeader label="Total Cost" sortKey="grand_total" requestSort={requestSort} sortConfig={sortConfig} className="text-right font-bold text-slate-900" />
                 </tr>
               </thead>
               <tbody>
-                {costs.length === 0 ? (
+                {filteredAndSortedData.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="px-4 py-8 text-center text-slate-500">
-                      No cost data available for the selected period.
+                      No cost data available for the selected period matching criteria.
                     </td>
                   </tr>
                 ) : (
-                  costs.map((c) => (
+                  filteredAndSortedData.map((c) => (
                     <tr key={c.vehicle_id} className="border-b border-slate-100 hover:bg-slate-50/50">
                       <td className="px-4 py-3 font-medium">
                         <div className="flex flex-col">

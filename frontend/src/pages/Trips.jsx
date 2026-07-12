@@ -4,15 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { MapPin, Plus, CheckCircle2, PlayCircle, XCircle, Download } from 'lucide-react';
+import { MapPin, Plus, CheckCircle2, PlayCircle, XCircle, Download, Search } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { exportToCSV } from '../utils/export';
+import { useTableData } from '../hooks/useTableData';
+import { SortableHeader } from '../components/ui/SortableHeader';
 
 const Trips = () => {
   const [trips, setTrips] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
   
+  const { filteredAndSortedData, searchQuery, setSearchQuery, requestSort, sortConfig } = useTableData(trips, ['source', 'destination', 'registration_number', 'driver_name', 'status']);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
   const [completingTrip, setCompletingTrip] = useState(null);
@@ -165,13 +169,22 @@ const Trips = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Trip Management</h1>
           <p className="text-sm text-slate-500">Plan and dispatch active trips.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button onClick={() => exportToCSV(trips, 'trips_export.csv')} variant="outline" className="flex items-center gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              placeholder="Search trips..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
+          <Button onClick={() => exportToCSV(filteredAndSortedData, 'trips_export.csv')} variant="outline" className="flex items-center gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
           <Button onClick={() => { setError(null); setIsModalOpen(true); }} className="gap-2 bg-blue-600 hover:bg-blue-700">
@@ -190,24 +203,24 @@ const Trips = () => {
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="px-4 py-3">Route</th>
-                  <th className="px-4 py-3">Vehicle</th>
-                  <th className="px-4 py-3">Driver</th>
-                  <th className="px-4 py-3">Cargo (kg)</th>
-                  <th className="px-4 py-3">Distance (km)</th>
-                  <th className="px-4 py-3">Status</th>
+                  <SortableHeader label="Route" sortKey="source" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Vehicle" sortKey="registration_number" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Driver" sortKey="driver_name" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Cargo (kg)" sortKey="cargo_weight_kg" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Distance (km)" sortKey="planned_distance_km" requestSort={requestSort} sortConfig={sortConfig} />
+                  <SortableHeader label="Status" sortKey="status" requestSort={requestSort} sortConfig={sortConfig} />
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {trips.length === 0 ? (
+                {filteredAndSortedData.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="px-4 py-8 text-center text-slate-500">
-                      No trips found. Create one to get started.
+                      No trips found matching criteria.
                     </td>
                   </tr>
                 ) : (
-                  trips.map((trip) => (
+                  filteredAndSortedData.map((trip) => (
                     <tr key={trip.id} className="border-b border-slate-100 hover:bg-slate-50/50">
                       <td className="px-4 py-3 font-medium">
                         <div className="flex items-center gap-2">

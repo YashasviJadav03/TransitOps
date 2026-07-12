@@ -1,27 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Activity, Truck, Users, MapPin, DollarSign, Wrench } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Activity, Truck, Users, MapPin, DollarSign, Wrench, Loader2 } from 'lucide-react';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
+  const [chartData, setChartData] = useState([]);
   const [vehicleTypeFilter, setVehicleTypeFilter] = useState('All');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchStatsAndChart = async () => {
       try {
-        const res = await axios.get('/dashboard/stats', {
-          params: { vehicleType: vehicleTypeFilter }
-        });
-        setStats(res.data.data);
+        const [statsRes, chartRes] = await Promise.all([
+          axios.get('/dashboard/stats', { params: { vehicleType: vehicleTypeFilter } }),
+          axios.get('/dashboard/chart')
+        ]);
+        setStats(statsRes.data.data);
+        setChartData(chartRes.data.data);
       } catch (error) {
         console.error('Failed to fetch dashboard stats:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+    fetchStatsAndChart();
   }, [vehicleTypeFilter]);
 
   const formatCurrency = (val) => {
@@ -31,8 +35,9 @@ const Dashboard = () => {
   if (loading || !stats) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="text-slate-500 animate-pulse flex items-center gap-2">
-          <Activity className="w-5 h-5" /> Loading Analytics...
+        <div className="text-blue-500 flex flex-col items-center gap-2">
+          <Loader2 className="w-8 h-8 animate-spin" />
+          <span className="text-slate-500 font-medium">Loading Analytics...</span>
         </div>
       </div>
     );
@@ -202,6 +207,46 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Analytics Chart Row */}
+      <Card className="shadow-sm mt-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-slate-500" />
+            <CardTitle>Financial Trends (6 Months)</CardTitle>
+          </div>
+          <CardDescription>Historical aggregation of fuel, maintenance, and general expenses.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-72 w-full mt-4">
+            {chartData && chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#64748b', fontSize: 12}} 
+                    tickFormatter={(val) => `$${val}`}
+                    dx={-10}
+                  />
+                  <Tooltip 
+                    cursor={{fill: '#f1f5f9'}}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value) => [`$${value}`, 'Cost']}
+                  />
+                  <Bar dataKey="total" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-slate-400">
+                No financial data recorded in the last 6 months.
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

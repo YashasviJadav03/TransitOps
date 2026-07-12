@@ -10,6 +10,7 @@ import Trips from './pages/Trips';
 import Finances from './pages/Finances';
 import Maintenance from './pages/Maintenance';
 import Sidebar from './components/Sidebar';
+import { Menu } from 'lucide-react';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -27,11 +28,23 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const DashboardLayout = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-900">
-      <Sidebar />
-      <main className="flex-1 ml-64 overflow-y-auto min-h-screen p-8">
-        {children}
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      
+      <main className="flex-1 md:ml-64 flex flex-col min-h-screen overflow-hidden">
+        {/* Mobile Topbar */}
+        <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200 p-4 shrink-0">
+          <h1 className="font-bold text-blue-600">TransitOps</h1>
+          <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-md">
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          {children}
+        </div>
       </main>
     </div>
   );

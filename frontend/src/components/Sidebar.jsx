@@ -1,9 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Truck, Users, MapPin, Wrench, LogOut, DollarSign } from 'lucide-react';
+import { LayoutDashboard, Truck, Users, MapPin, Wrench, LogOut, DollarSign, X } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuth();
 
   const links = [
@@ -16,13 +16,32 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 text-slate-900 flex flex-col h-screen fixed left-0 top-0 shadow-sm">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-blue-600 tracking-tight flex items-center gap-2">
-          <Truck className="w-6 h-6" /> TransitOps
-        </h1>
-        <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Smart Transport</p>
-      </div>
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-slate-900/50 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Content */}
+      <aside className={`
+        fixed left-0 top-0 z-50 h-screen w-64 flex flex-col bg-white border-r border-slate-200 shadow-sm
+        transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="p-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-blue-600 tracking-tight flex items-center gap-2">
+              <Truck className="w-6 h-6" /> TransitOps
+            </h1>
+            <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Smart Transport</p>
+          </div>
+          <button onClick={() => setIsOpen(false)} className="md:hidden text-slate-500 hover:bg-slate-100 p-2 rounded-md">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
       <nav className="flex-1 px-4 space-y-2 mt-4">
         {links.map((link) => (
@@ -61,6 +80,7 @@ const Sidebar = () => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
 

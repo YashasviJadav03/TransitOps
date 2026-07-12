@@ -92,6 +92,33 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+const getChartData = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        to_char(event_date, 'Mon YYYY') as month,
+        to_char(event_date, 'YYYY-MM') as sort_key,
+        SUM(cost) as total
+      FROM (
+        SELECT log_date as event_date, cost FROM fuel_logs
+        UNION ALL
+        SELECT service_date as event_date, cost FROM maintenance_logs
+        UNION ALL
+        SELECT expense_date as event_date, (toll_amount + other_amount) as cost FROM expenses
+      ) combined
+      WHERE event_date >= date_trunc('month', CURRENT_DATE - INTERVAL '5 months')
+      GROUP BY month, sort_key
+      ORDER BY sort_key ASC
+    `;
+    const result = await pool.query(query);
+    res.json({ status: 'success', data: result.rows });
+  } catch (error) {
+    console.error('Error fetching chart data:', error);
+    res.status(500).json({ status: 'error', message: 'Server error fetching chart data' });
+  }
+};
+
 module.exports = {
-  getDashboardStats
+  getDashboardStats,
+  getChartData
 };

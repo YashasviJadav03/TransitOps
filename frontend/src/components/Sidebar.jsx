@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Truck, Users, MapPin, Wrench, LogOut } from 'lucide-react';
+import { LayoutDashboard, Truck, Users, MapPin, Wrench, LogOut, DollarSign } from 'lucide-react';
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -11,6 +11,7 @@ const Sidebar = () => {
     { to: '/vehicles', label: 'Fleet Registry', icon: <Truck className="w-5 h-5" /> },
     { to: '/drivers', label: 'Drivers', icon: <Users className="w-5 h-5" /> },
     { to: '/trips', label: 'Trips', icon: <MapPin className="w-5 h-5" /> },
+    { to: '/finances', label: 'Finances', icon: <DollarSign className="w-5 h-5" /> },
     { to: '/maintenance', label: 'Maintenance', icon: <Wrench className="w-5 h-5" /> },
   ];
 

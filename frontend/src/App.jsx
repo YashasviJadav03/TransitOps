@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Vehicles from './pages/Vehicles';
 import Drivers from './pages/Drivers';
 import Trips from './pages/Trips';
+import Finances from './pages/Finances';
 import Maintenance from './pages/Maintenance';
 import Sidebar from './components/Sidebar';
 import './index.css';
@@ -116,6 +117,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <DashboardLayout>
               <Maintenance />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/finances" 
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Finances />
             </DashboardLayout>
           </ProtectedRoute>
         } 

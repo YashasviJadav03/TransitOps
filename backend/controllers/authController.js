@@ -57,7 +57,7 @@ const loginUser = async (req, res) => {
 
   try {
     const userQuery = await pool.query(
-      `SELECT u.id, u.email, u.password_hash, u.role_id, r.name as role_name 
+      `SELECT u.id, u.email, u.password_hash, u.role_id, u.failed_login_attempts, u.account_locked_until, r.name as role_name 
        FROM users u 
        JOIN roles r ON u.role_id = r.id 
        WHERE u.email = $1`,
@@ -69,11 +69,27 @@ const loginUser = async (req, res) => {
     }
 
     const user = userQuery.rows[0];
+
+    // Check if account is locked
+    if (user.account_locked_until && new Date() < new Date(user.account_locked_until)) {
+      return res.status(403).json({ status: 'error', message: 'Invalid credential account locked after 5 failed attempt' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!isMatch) {
-      return res.status(400).json({ status: 'error', message: 'Invalid credentials' });
+      const attempts = (user.failed_login_attempts || 0) + 1;
+      if (attempts >= 5) {
+        await pool.query("UPDATE users SET failed_login_attempts = $1, account_locked_until = CURRENT_TIMESTAMP + INTERVAL '15 minutes' WHERE id = $2", [attempts, user.id]);
+        return res.status(403).json({ status: 'error', message: 'Invalid credential account locked after 5 failed attempt' });
+      } else {
+        await pool.query('UPDATE users SET failed_login_attempts = $1 WHERE id = $2', [attempts, user.id]);
+        return res.status(400).json({ status: 'error', message: 'Invalid credentials' });
+      }
     }
+
+    // Reset failed login attempts on successful login
+    await pool.query('UPDATE users SET failed_login_attempts = 0, account_locked_until = NULL WHERE id = $1', [user.id]);
 
     const token = generateToken(user);
     res.json({

@@ -12,6 +12,8 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role_id UUID REFERENCES roles(id) ON DELETE RESTRICT,
+    failed_login_attempts INTEGER DEFAULT 0,
+    account_locked_until TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -74,6 +76,15 @@ CREATE TABLE expenses (
     toll_amount DECIMAL(10, 2) DEFAULT 0,
     other_amount DECIMAL(10, 2) DEFAULT 0,
     expense_date DATE NOT NULL
+);
+
+CREATE TABLE vehicle_documents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vehicle_id UUID REFERENCES vehicles(id) ON DELETE CASCADE,
+    document_type VARCHAR(100) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Insert Default Roles

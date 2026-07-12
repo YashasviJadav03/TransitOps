@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Activity, Truck, Users, MapPin, DollarSign, Wrench, Loader2 } from 'lucide-react';
+import { SpotlightCard } from '../components/reactbits/SpotlightCard';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -85,7 +86,7 @@ const Dashboard = () => {
 
       {/* KPI Row 1: High Level Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-l-4 border-l-blue-500 shadow-sm">
+        <SpotlightCard className="border-l-4 border-l-blue-500">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -103,9 +104,9 @@ const Dashboard = () => {
               />
             </div>
           </CardContent>
-        </Card>
+        </SpotlightCard>
 
-        <Card className="border-l-4 border-l-emerald-500 shadow-sm">
+        <SpotlightCard className="border-l-4 border-l-emerald-500">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -118,9 +119,9 @@ const Dashboard = () => {
             </div>
             <p className="text-xs text-slate-500 dark:text-neutral-400 mt-4">Lifetime combined fuel, maintenance, and expenses</p>
           </CardContent>
-        </Card>
+        </SpotlightCard>
 
-        <Card className="border-l-4 border-l-purple-500 shadow-sm">
+        <SpotlightCard className="border-l-4 border-l-purple-500">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -136,12 +137,12 @@ const Dashboard = () => {
               <span className="text-slate-500 dark:text-neutral-400"><strong className="text-slate-700 dark:text-neutral-300">{stats.trips.completed}</strong> Completed</span>
             </div>
           </CardContent>
-        </Card>
+        </SpotlightCard>
       </div>
 
       {/* Breakdowns Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="shadow-sm">
+        <SpotlightCard>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Truck className="w-5 h-5 text-slate-500 dark:text-neutral-400" />
@@ -181,9 +182,9 @@ const Dashboard = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </SpotlightCard>
 
-        <Card className="shadow-sm">
+        <SpotlightCard>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-slate-500 dark:text-neutral-400" />
@@ -223,11 +224,11 @@ const Dashboard = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </SpotlightCard>
       </div>
 
       {/* Analytics Chart Row */}
-      <Card className="shadow-sm mt-6">
+      <SpotlightCard className="mt-6">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-slate-500 dark:text-neutral-400" />
@@ -264,7 +265,7 @@ const Dashboard = () => {
             )}
           </div>
         </CardContent>
-      </Card>
+      </SpotlightCard>
     </div>
   );
 };

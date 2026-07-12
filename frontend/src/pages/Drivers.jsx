@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { exportToCSV, exportToPDF } from '../utils/export';
 import { useTableData } from '../hooks/useTableData';
 import { SortableHeader } from '../components/ui/SortableHeader';
+import { StarBorder } from '../components/reactbits/StarBorder';
 
 const Drivers = () => {
   const { user } = useAuth();

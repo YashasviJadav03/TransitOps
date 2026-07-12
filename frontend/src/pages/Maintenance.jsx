@@ -9,6 +9,7 @@ import { Modal } from '../components/ui/modal';
 import { exportToCSV, exportToPDF } from '../utils/export';
 import { useTableData } from '../hooks/useTableData';
 import { SortableHeader } from '../components/ui/SortableHeader';
+import { StarBorder } from '../components/reactbits/StarBorder';
 
 const Maintenance = () => {
   const [logs, setLogs] = useState([]);

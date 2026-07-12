@@ -6,6 +6,8 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
 import { Truck } from 'lucide-react';
+import { GridBackground } from '../components/reactbits/GridBackground';
+import { StarBorder } from '../components/reactbits/StarBorder';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -33,13 +35,13 @@ const Register = () => {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-neutral-800/50 px-4">
-      <div className="w-full max-w-md space-y-6">
+    <GridBackground>
+      <div className="w-full max-w-md space-y-6 px-4">
         <div className="flex flex-col items-center justify-center space-y-2 text-center">
-          <div className="rounded-full bg-blue-100 p-3">
+          <div className="rounded-full bg-blue-100 p-3 shadow-lg shadow-blue-500/20">
             <Truck className="h-6 w-6 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">TransitOps</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-neutral-100">TransitOps</h1>
           <p className="text-sm text-slate-500 dark:text-neutral-400">Create a new account to manage your fleet.</p>
         </div>
         
@@ -90,9 +92,9 @@ const Register = () => {
                   <option value="Financial Analyst">Financial Analyst</option>
                 </select>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <StarBorder type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Creating account...' : 'Create Account'}
-              </Button>
+              </StarBorder>
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
@@ -102,7 +104,7 @@ const Register = () => {
           </CardFooter>
         </Card>
       </div>
-    </div>
+    </GridBackground>
   );
 };
 

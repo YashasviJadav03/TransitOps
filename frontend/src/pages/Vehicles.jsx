@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Edit2, Loader2, Download, FileDown, Search } from 'lucide-react';
+import { Plus, Edit2, Loader2, Download, FileDown, Search, Folder, Trash2 } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { exportToCSV, exportToPDF } from '../utils/export';
 import { useTableData } from '../hooks/useTableData';
 import { SortableHeader } from '../components/ui/SortableHeader';
+import { StarBorder } from '../components/reactbits/StarBorder';
 
 const Vehicles = () => {
   const { user } = useAuth();
@@ -23,6 +24,15 @@ const Vehicles = () => {
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Documents Modal State
+  const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
+  const [currentVehicleDocs, setCurrentVehicleDocs] = useState(null); // stores the vehicle being viewed
+  const [documents, setDocuments] = useState([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadType, setUploadType] = useState('Registration');
+  const [isUploading, setIsUploading] = useState(false);
   
   // Form State
   const initialFormState = {
@@ -94,6 +104,60 @@ const Vehicles = () => {
       setFormError(error.response?.data?.message || 'Failed to save vehicle');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleOpenDocs = async (vehicle) => {
+    setCurrentVehicleDocs(vehicle);
+    setIsDocsModalOpen(true);
+    setUploadFile(null);
+    setUploadType('Registration');
+    fetchDocuments(vehicle.id);
+  };
+
+  const fetchDocuments = async (vehicleId) => {
+    setDocsLoading(true);
+    try {
+      const res = await axios.get(`/vehicles/${vehicleId}/documents`);
+      setDocuments(res.data.data);
+    } catch (error) {
+      console.error('Failed to fetch documents', error);
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+
+  const handleUploadDocument = async (e) => {
+    e.preventDefault();
+    if (!uploadFile || !currentVehicleDocs) return;
+    
+    setIsUploading(true);
+    const formDataObj = new FormData();
+    formDataObj.append('document', uploadFile);
+    formDataObj.append('document_type', uploadType);
+
+    try {
+      await axios.post(`/vehicles/${currentVehicleDocs.id}/documents`, formDataObj, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setUploadFile(null);
+      fetchDocuments(currentVehicleDocs.id);
+    } catch (error) {
+      console.error('Failed to upload document', error);
+      alert('Failed to upload document');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteDocument = async (docId) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+    try {
+      await axios.delete(`/vehicles/documents/${docId}`);
+      fetchDocuments(currentVehicleDocs.id);
+    } catch (error) {
+      console.error('Failed to delete document', error);
+      alert('Failed to delete document');
     }
   };
 
@@ -177,9 +241,14 @@ const Vehicles = () => {
                       <td className="p-4">{getStatusBadge(v.status)}</td>
                       <td className="p-4 text-right">
                         {user?.role_name === 'Fleet Manager' && (
-                          <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(v)} className="text-slate-500 dark:text-neutral-400 hover:text-blue-600">
-                            <Edit2 className="w-4 h-4 mr-1" /> Edit
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleOpenDocs(v)} className="text-slate-500 dark:text-neutral-400 hover:text-blue-600">
+                              <Folder className="w-4 h-4 mr-1" /> Docs
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(v)} className="text-slate-500 dark:text-neutral-400 hover:text-blue-600">
+                              <Edit2 className="w-4 h-4 mr-1" /> Edit
+                            </Button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -310,6 +379,91 @@ const Vehicles = () => {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Documents Modal */}
+      <Modal 
+        isOpen={isDocsModalOpen} 
+        onClose={() => setIsDocsModalOpen(false)}
+        title={currentVehicleDocs ? `Documents: ${currentVehicleDocs.registration_number}` : 'Documents'}
+        description="Manage insurance, registration, and other documents for this vehicle."
+      >
+        <div className="space-y-6">
+          {/* Upload Form */}
+          {user?.role_name === 'Fleet Manager' && (
+            <form onSubmit={handleUploadDocument} className="flex gap-3 items-end p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-slate-200 dark:border-neutral-700">
+              <div className="space-y-2 flex-1">
+                <Label>Document Type</Label>
+                <select 
+                  value={uploadType}
+                  onChange={(e) => setUploadType(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Registration">Registration</option>
+                  <option value="Insurance">Insurance</option>
+                  <option value="Permit">Permit</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-2 flex-1">
+                <Label>File</Label>
+                <input 
+                  type="file" 
+                  onChange={(e) => setUploadFile(e.target.files[0])}
+                  className="flex w-full text-sm text-slate-500 dark:text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/50 dark:file:text-blue-400"
+                  required
+                />
+              </div>
+              <Button type="submit" disabled={isUploading || !uploadFile} className="bg-blue-600 hover:bg-blue-700 text-white">
+                {isUploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                Upload
+              </Button>
+            </form>
+          )}
+
+          {/* Documents List */}
+          <div className="border border-slate-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-slate-50 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Document Type</th>
+                  <th className="px-4 py-3 font-medium">File Name</th>
+                  <th className="px-4 py-3 font-medium">Uploaded At</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-neutral-700">
+                {docsLoading ? (
+                  <tr><td colSpan="4" className="px-4 py-8 text-center text-slate-500">Loading documents...</td></tr>
+                ) : documents.length === 0 ? (
+                  <tr><td colSpan="4" className="px-4 py-8 text-center text-slate-500">No documents uploaded yet.</td></tr>
+                ) : (
+                  documents.map((doc) => (
+                    <tr key={doc.id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50">
+                      <td className="px-4 py-3 font-medium text-slate-700 dark:text-neutral-300">{doc.document_type}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-neutral-400 truncate max-w-[150px]" title={doc.file_name}>{doc.file_name}</td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-neutral-400">
+                        {new Date(doc.uploaded_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end gap-2">
+                          <a href={`http://localhost:5000${doc.file_path}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            View
+                          </a>
+                          {user?.role_name === 'Fleet Manager' && (
+                            <button onClick={() => handleDeleteDocument(doc.id)} className="text-red-500 hover:text-red-700" title="Delete">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </Modal>
     </div>
   );

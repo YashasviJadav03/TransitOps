@@ -13,16 +13,18 @@ const authRoutes = require('./routes/authRoutes');
 const vehicleRoutes = require('./routes/vehicleRoutes');
 const driverRoutes = require('./routes/driverRoutes');
 const tripRoutes = require('./routes/tripRoutes');
-const financeRoutes = require('./routes/financeRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
+const financeRoutes = require('./routes/financeRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const pool = require('./db');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/trips', tripRoutes);
-app.use('/api/finances', financeRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/finances', financeRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/health', async (req, res) => {
   try {

@@ -56,8 +56,22 @@ const createVehicle = async (req, res) => {
 const updateVehicle = async (req, res) => {
   const { id } = req.params;
   const { name_model, type, max_capacity_kg, odometer, status } = req.body;
+  
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
+    await client.query('BEGIN');
+    const current = await client.query('SELECT status FROM vehicles WHERE id = $1 FOR UPDATE', [id]);
+    if (current.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ status: 'error', message: 'Vehicle not found' });
+    }
+    
+    if (status && status !== current.rows[0].status && current.rows[0].status === 'On Trip') {
+       await client.query('ROLLBACK');
+       return res.status(400).json({ status: 'error', message: 'Cannot manually change status of a vehicle that is On Trip' });
+    }
+
+    const result = await client.query(
       `UPDATE vehicles 
        SET name_model = COALESCE($1, name_model), 
            type = COALESCE($2, type), 
@@ -68,13 +82,14 @@ const updateVehicle = async (req, res) => {
       [name_model, type, max_capacity_kg, odometer, status, id]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ status: 'error', message: 'Vehicle not found' });
-    }
+    await client.query('COMMIT');
     res.json({ status: 'success', data: result.rows[0] });
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error updating vehicle:', error);
     res.status(500).json({ status: 'error', message: 'Server Error' });
+  } finally {
+    client.release();
   }
 };
 

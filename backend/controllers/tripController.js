@@ -105,6 +105,20 @@ const updateTripStatus = async (req, res) => {
       return res.status(400).json({ status: 'error', message: `Invalid transition from ${trip.status} to ${status}` });
     }
 
+    // 2.5 Validate resources if dispatching
+    if (status === 'Dispatched') {
+      const vCheck = await client.query('SELECT status FROM vehicles WHERE id = $1 FOR UPDATE', [trip.vehicle_id]);
+      if (vCheck.rows.length === 0 || vCheck.rows[0].status !== 'Available') {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ status: 'error', message: `Cannot dispatch: Vehicle is ${vCheck.rows[0]?.status || 'missing'}` });
+      }
+      const dCheck = await client.query('SELECT status FROM drivers WHERE id = $1 FOR UPDATE', [trip.driver_id]);
+      if (dCheck.rows.length === 0 || dCheck.rows[0].status !== 'Available') {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ status: 'error', message: `Cannot dispatch: Driver is ${dCheck.rows[0]?.status || 'missing'}` });
+      }
+    }
+
     // 3. Update Trip Status
     await client.query('UPDATE trips SET status = $1 WHERE id = $2', [status, id]);
 

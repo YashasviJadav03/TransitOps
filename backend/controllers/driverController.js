@@ -50,8 +50,22 @@ const createDriver = async (req, res) => {
 const updateDriver = async (req, res) => {
   const { id } = req.params;
   const { name, license_category, license_expiry, contact_number, status } = req.body;
+  
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
+    await client.query('BEGIN');
+    const current = await client.query('SELECT status FROM drivers WHERE id = $1 FOR UPDATE', [id]);
+    if (current.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ status: 'error', message: 'Driver not found' });
+    }
+
+    if (status && status !== current.rows[0].status && current.rows[0].status === 'On Trip') {
+       await client.query('ROLLBACK');
+       return res.status(400).json({ status: 'error', message: 'Cannot manually change status of a driver who is On Trip' });
+    }
+
+    const result = await client.query(
       `UPDATE drivers 
        SET name = COALESCE($1, name), 
            license_category = COALESCE($2, license_category), 
@@ -62,13 +76,14 @@ const updateDriver = async (req, res) => {
       [name, license_category, license_expiry, contact_number, status, id]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ status: 'error', message: 'Driver not found' });
-    }
+    await client.query('COMMIT');
     res.json({ status: 'success', data: result.rows[0] });
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error updating driver:', error);
     res.status(500).json({ status: 'error', message: 'Server Error' });
+  } finally {
+    client.release();
   }
 };
 

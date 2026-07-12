@@ -132,7 +132,11 @@ const updateTripStatus = async (req, res) => {
     }
 
     // 3. Update Trip Status
-    await client.query('UPDATE trips SET status = $1 WHERE id = $2', [status, id]);
+    if (status === 'Completed') {
+      await client.query('UPDATE trips SET status = $1, final_odometer = $2, fuel_consumed_liters = $3 WHERE id = $4', [status, final_odometer, fuel_consumed_liters, id]);
+    } else {
+      await client.query('UPDATE trips SET status = $1 WHERE id = $2', [status, id]);
+    }
 
     // 4. Update Resource Statuses based on transition
     if (status === 'Dispatched') {

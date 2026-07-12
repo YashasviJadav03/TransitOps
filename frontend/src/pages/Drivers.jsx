@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Edit2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Plus, Edit2, AlertTriangle, Loader2, Download } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
+import { exportToCSV } from '../utils/export';
 
 const Drivers = () => {
   const { user } = useAuth();
@@ -120,11 +121,16 @@ const Drivers = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Driver Profiles</h1>
           <p className="text-slate-500 mt-1">Manage personnel and monitor license validity</p>
         </div>
-        {(user?.role_name === 'Fleet Manager' || user?.role_name === 'Safety Officer') && (
-          <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4" /> Add Driver
+        <div className="flex items-center gap-3">
+          <Button onClick={() => exportToCSV(drivers, 'drivers_export.csv')} variant="outline" className="flex items-center gap-2">
+            <Download className="w-4 h-4" /> Export CSV
           </Button>
-        )}
+          {(user?.role_name === 'Fleet Manager' || user?.role_name === 'Safety Officer') && (
+            <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4" /> Add Driver
+            </Button>
+          )}
+        </div>
       </div>
 
       <Card className="bg-white border-slate-200 shadow-sm">

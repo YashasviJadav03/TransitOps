@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Plus, CheckCircle2, Wrench } from 'lucide-react';
+import { Plus, CheckCircle2, Wrench, Download } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
+import { exportToCSV } from '../utils/export';
 
 const Maintenance = () => {
   const [logs, setLogs] = useState([]);
@@ -91,9 +92,14 @@ const Maintenance = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Maintenance Workflow</h1>
           <p className="text-slate-500 mt-1">Log vehicle service and track fleet health.</p>
         </div>
-        <Button onClick={() => { setError(null); setIsModalOpen(true); }} className="gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Log Maintenance
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button onClick={() => exportToCSV(logs, 'maintenance_export.csv')} variant="outline" className="flex items-center gap-2">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          <Button onClick={() => { setError(null); setIsModalOpen(true); }} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> Log Maintenance
+          </Button>
+        </div>
       </div>
 
       <Card className="bg-white border-slate-200 shadow-sm">

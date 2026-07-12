@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Plus, Edit2, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Loader2, Download } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
+import { exportToCSV } from '../utils/export';
 
 const Vehicles = () => {
   const { user } = useAuth();
@@ -113,11 +114,16 @@ const Vehicles = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Fleet Registry</h1>
           <p className="text-slate-500 mt-1">Manage and track all company vehicles</p>
         </div>
-        {user?.role_name === 'Fleet Manager' && (
-          <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4" /> Add Vehicle
+        <div className="flex items-center gap-3">
+          <Button onClick={() => exportToCSV(vehicles, 'vehicles_export.csv')} variant="outline" className="flex items-center gap-2">
+            <Download className="w-4 h-4" /> Export CSV
           </Button>
-        )}
+          {user?.role_name === 'Fleet Manager' && (
+            <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4" /> Add Vehicle
+            </Button>
+          )}
+        </div>
       </div>
 
       <Card className="bg-white border-slate-200 shadow-sm">

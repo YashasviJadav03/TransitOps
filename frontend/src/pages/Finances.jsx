@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { DollarSign, Droplet, FileText, Calendar } from 'lucide-react';
+import { Plus, Fuel, FileText, Download, Droplet, Calendar } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
+import { exportToCSV } from '../utils/export';
 
 const Finances = () => {
   const [costs, setCosts] = useState([]);
@@ -118,15 +119,18 @@ const Finances = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Fuel & Expenses</h1>
-          <p className="text-sm text-slate-500">Monitor operational costs across your fleet.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Financial Overview</h1>
+          <p className="text-slate-500 mt-1">Track operational costs and vehicle expenses.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
+          <Button onClick={() => exportToCSV(costs, 'finances_export.csv')} variant="outline" className="flex items-center gap-2">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
           <Button onClick={() => { setError(null); setIsFuelModalOpen(true); }} className="gap-2 bg-blue-600 hover:bg-blue-700">
-            <Droplet className="w-4 h-4" /> Log Fuel
+            <Fuel className="w-4 h-4" /> Log Fuel
           </Button>
           <Button onClick={() => { setError(null); setIsExpenseModalOpen(true); }} className="gap-2 bg-slate-800 hover:bg-slate-900">
-            <FileText className="w-4 h-4" /> Log Expense
+            <FileText className="w-4 h-4" /> Add Expense
           </Button>
         </div>
       </div>

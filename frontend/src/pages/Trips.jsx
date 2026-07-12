@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { MapPin, Plus, CheckCircle2, PlayCircle, XCircle } from 'lucide-react';
+import { MapPin, Plus, CheckCircle2, PlayCircle, XCircle, Download } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
+import { exportToCSV } from '../utils/export';
 
 const Trips = () => {
   const [trips, setTrips] = useState([]);
@@ -169,9 +170,14 @@ const Trips = () => {
           <h1 className="text-2xl font-bold text-slate-900">Trip Management</h1>
           <p className="text-sm text-slate-500">Plan and dispatch active trips.</p>
         </div>
-        <Button onClick={() => { setError(null); setIsModalOpen(true); }} className="gap-2">
-          <Plus className="w-4 h-4" /> Create Trip
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button onClick={() => exportToCSV(trips, 'trips_export.csv')} variant="outline" className="flex items-center gap-2">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          <Button onClick={() => { setError(null); setIsModalOpen(true); }} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> Create Trip
+          </Button>
+        </div>
       </div>
 
       <Card>

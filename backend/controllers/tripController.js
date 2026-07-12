@@ -77,7 +77,7 @@ const getTrips = async (req, res) => {
 
 const updateTripStatus = async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body; // 'Dispatched', 'Completed', 'Cancelled'
+  const { status, final_odometer, fuel_consumed_liters, fuel_cost } = req.body; // 'Dispatched', 'Completed', 'Cancelled'
 
   const client = await pool.connect();
 
@@ -119,14 +119,34 @@ const updateTripStatus = async (req, res) => {
       }
     }
 
+    if (status === 'Completed') {
+      if (!final_odometer || !fuel_consumed_liters || !fuel_cost) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ status: 'error', message: 'final_odometer, fuel_consumed_liters, and fuel_cost are required to complete a trip' });
+      }
+      const vCheck = await client.query('SELECT odometer FROM vehicles WHERE id = $1', [trip.vehicle_id]);
+      if (vCheck.rows[0].odometer > final_odometer) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ status: 'error', message: `Final odometer cannot be less than current odometer (${vCheck.rows[0].odometer})` });
+      }
+    }
+
     // 3. Update Trip Status
-    await client.query('UPDATE trips SET status = $1 WHERE id = $2', [status, id]);
+    if (status === 'Completed') {
+      await client.query('UPDATE trips SET status = $1, final_odometer = $2, fuel_consumed_liters = $3 WHERE id = $4', [status, final_odometer, fuel_consumed_liters, id]);
+    } else {
+      await client.query('UPDATE trips SET status = $1 WHERE id = $2', [status, id]);
+    }
 
     // 4. Update Resource Statuses based on transition
     if (status === 'Dispatched') {
       await client.query('UPDATE vehicles SET status = $1 WHERE id = $2', ['On Trip', trip.vehicle_id]);
       await client.query('UPDATE drivers SET status = $1 WHERE id = $2', ['On Trip', trip.driver_id]);
-    } else if (status === 'Completed' || status === 'Cancelled') {
+    } else if (status === 'Completed') {
+      await client.query('UPDATE vehicles SET status = $1, odometer = $2 WHERE id = $3', ['Available', final_odometer, trip.vehicle_id]);
+      await client.query('UPDATE drivers SET status = $1 WHERE id = $2', ['Available', trip.driver_id]);
+      await client.query('INSERT INTO fuel_logs (vehicle_id, log_date, liters, cost) VALUES ($1, CURRENT_DATE, $2, $3)', [trip.vehicle_id, fuel_consumed_liters, fuel_cost]);
+    } else if (status === 'Cancelled') {
       await client.query('UPDATE vehicles SET status = $1 WHERE id = $2', ['Available', trip.vehicle_id]);
       await client.query('UPDATE drivers SET status = $1 WHERE id = $2', ['Available', trip.driver_id]);
     }

@@ -13,8 +13,17 @@ const Trips = () => {
   const [drivers, setDrivers] = useState([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [completingTrip, setCompletingTrip] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Form State
+  const [completeFormData, setCompleteFormData] = useState({
+    final_odometer: '',
+    fuel_consumed_liters: '',
+    fuel_cost: ''
+  });
 
   // Form State
   const [formData, setFormData] = useState({
@@ -55,6 +64,45 @@ const Trips = () => {
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleCompleteInputChange = (e) => {
+    setCompleteFormData({ ...completeFormData, [e.target.name]: e.target.value });
+  };
+
+  const handleOpenCompleteModal = (trip) => {
+    const vehicle = vehicles.find(v => v.registration_number === trip.registration_number);
+    setCompletingTrip(trip);
+    setCompleteFormData({
+      final_odometer: vehicle ? vehicle.odometer : '',
+      fuel_consumed_liters: '',
+      fuel_cost: ''
+    });
+    setError(null);
+    setIsCompleteModalOpen(true);
+  };
+
+  const handleCompleteSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      await axios.patch(`/trips/${completingTrip.id}/status`, {
+        status: 'Completed',
+        final_odometer: Number(completeFormData.final_odometer),
+        fuel_consumed_liters: Number(completeFormData.fuel_consumed_liters),
+        fuel_cost: Number(completeFormData.fuel_cost)
+      });
+      setIsCompleteModalOpen(false);
+      setCompletingTrip(null);
+      fetchTrips();
+      fetchResources();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to complete trip');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -178,7 +226,7 @@ const Trips = () => {
                           </>
                         )}
                         {trip.status === 'Dispatched' && (
-                          <Button size="sm" variant="outline" onClick={() => updateStatus(trip.id, 'Completed')} className="h-8 gap-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+                          <Button size="sm" variant="outline" onClick={() => handleOpenCompleteModal(trip)} className="h-8 gap-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
                             <CheckCircle2 className="w-3.5 h-3.5" /> Complete
                           </Button>
                         )}
@@ -266,6 +314,39 @@ const Trips = () => {
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={loading}>
               {loading ? 'Creating...' : 'Create Trip'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isCompleteModalOpen} onClose={() => setIsCompleteModalOpen(false)} title="Complete Trip">
+        <form onSubmit={handleCompleteSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              {error}
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <Label>Final Odometer (km)</Label>
+            <Input name="final_odometer" type="number" required min="1" value={completeFormData.final_odometer} onChange={handleCompleteInputChange} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Fuel Consumed (Liters)</Label>
+              <Input name="fuel_consumed_liters" type="number" step="0.01" required min="0.01" value={completeFormData.fuel_consumed_liters} onChange={handleCompleteInputChange} />
+            </div>
+            <div className="space-y-2">
+              <Label>Fuel Cost ($)</Label>
+              <Input name="fuel_cost" type="number" step="0.01" required min="0" value={completeFormData.fuel_cost} onChange={handleCompleteInputChange} />
+            </div>
+          </div>
+
+          <div className="pt-4 flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setIsCompleteModalOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              {loading ? 'Completing...' : 'Complete Trip'}
             </Button>
           </div>
         </form>
